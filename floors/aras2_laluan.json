@@ -1,0 +1,566 @@
+{
+  "aras_zon": "ARAS 2",
+  "nod": [
+    {
+      "id": 1,
+      "x": 432,
+      "y": 152,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 2,
+      "x": 509,
+      "y": 154,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 3,
+      "x": 391,
+      "y": 106,
+      "label": "1",
+      "jenis": "tangga"
+    },
+    {
+      "id": 4,
+      "x": 587,
+      "y": 178,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 5,
+      "x": 664,
+      "y": 177,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 6,
+      "x": 704,
+      "y": 179,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 7,
+      "x": 780,
+      "y": 177,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 8,
+      "x": 819,
+      "y": 180,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 9,
+      "x": 528,
+      "y": 221,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 10,
+      "x": 528,
+      "y": 262,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 11,
+      "x": 526,
+      "y": 338,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 12,
+      "x": 528,
+      "y": 374,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 13,
+      "x": 527,
+      "y": 454,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 14,
+      "x": 575,
+      "y": 516,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 15,
+      "x": 596,
+      "y": 516,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 16,
+      "x": 552,
+      "y": 549,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 17,
+      "x": 838,
+      "y": 580,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 19,
+      "x": 913,
+      "y": 530,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 20,
+      "x": 912,
+      "y": 454,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 21,
+      "x": 913,
+      "y": 413,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 22,
+      "x": 913,
+      "y": 338,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 23,
+      "x": 913,
+      "y": 297,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 24,
+      "x": 911,
+      "y": 221,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 25,
+      "x": 895,
+      "y": 177,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 26,
+      "x": 953,
+      "y": 178,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 27,
+      "x": 921,
+      "y": 154,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 28,
+      "x": 983,
+      "y": 155,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 29,
+      "x": 862,
+      "y": 502,
+      "label": "3",
+      "jenis": "tangga"
+    },
+    {
+      "id": 30,
+      "x": 446,
+      "y": 544,
+      "label": "2",
+      "jenis": "tangga"
+    },
+    {
+      "id": 31,
+      "x": 422,
+      "y": 376,
+      "label": "4",
+      "jenis": "tangga"
+    },
+    {
+      "id": 32,
+      "x": 1010,
+      "y": 133,
+      "label": "5",
+      "jenis": "tangga"
+    },
+    {
+      "id": 34,
+      "x": 399,
+      "y": 346,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 35,
+      "x": 396,
+      "y": 374,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 36,
+      "x": 498,
+      "y": 406,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 37,
+      "x": 399,
+      "y": 405,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 38,
+      "x": 897,
+      "y": 502,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 39,
+      "x": 900,
+      "y": 434,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 40,
+      "x": 899,
+      "y": 317,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 42,
+      "x": 1011,
+      "y": 194,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 43,
+      "x": 953,
+      "y": 195,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 44,
+      "x": 818,
+      "y": 194,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 45,
+      "x": 779,
+      "y": 194,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 46,
+      "x": 681,
+      "y": 191,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 47,
+      "x": 560,
+      "y": 191,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 48,
+      "x": 509,
+      "y": 167,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 49,
+      "x": 393,
+      "y": 164,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 50,
+      "x": 511,
+      "y": 244,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 51,
+      "x": 509,
+      "y": 346,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 52,
+      "x": 585,
+      "y": 536,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 53,
+      "x": 881,
+      "y": 579,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 54,
+      "x": 901,
+      "y": 195,
+      "label": "",
+      "jenis": "biasa"
+    }
+  ],
+  "laluan": [
+    {
+      "dari": 34,
+      "ke": 35
+    },
+    {
+      "dari": 35,
+      "ke": 31
+    },
+    {
+      "dari": 12,
+      "ke": 36
+    },
+    {
+      "dari": 36,
+      "ke": 37
+    },
+    {
+      "dari": 37,
+      "ke": 35
+    },
+    {
+      "dari": 20,
+      "ke": 38
+    },
+    {
+      "dari": 38,
+      "ke": 29
+    },
+    {
+      "dari": 19,
+      "ke": 29
+    },
+    {
+      "dari": 21,
+      "ke": 39
+    },
+    {
+      "dari": 39,
+      "ke": 38
+    },
+    {
+      "dari": 22,
+      "ke": 40
+    },
+    {
+      "dari": 23,
+      "ke": 40
+    },
+    {
+      "dari": 40,
+      "ke": 39
+    },
+    {
+      "dari": 27,
+      "ke": 26
+    },
+    {
+      "dari": 28,
+      "ke": 26
+    },
+    {
+      "dari": 42,
+      "ke": 32
+    },
+    {
+      "dari": 26,
+      "ke": 43
+    },
+    {
+      "dari": 43,
+      "ke": 42
+    },
+    {
+      "dari": 25,
+      "ke": 43
+    },
+    {
+      "dari": 8,
+      "ke": 44
+    },
+    {
+      "dari": 7,
+      "ke": 45
+    },
+    {
+      "dari": 45,
+      "ke": 44
+    },
+    {
+      "dari": 6,
+      "ke": 46
+    },
+    {
+      "dari": 5,
+      "ke": 46
+    },
+    {
+      "dari": 46,
+      "ke": 47
+    },
+    {
+      "dari": 4,
+      "ke": 47
+    },
+    {
+      "dari": 2,
+      "ke": 48
+    },
+    {
+      "dari": 47,
+      "ke": 48
+    },
+    {
+      "dari": 48,
+      "ke": 49
+    },
+    {
+      "dari": 1,
+      "ke": 49
+    },
+    {
+      "dari": 49,
+      "ke": 3
+    },
+    {
+      "dari": 10,
+      "ke": 50
+    },
+    {
+      "dari": 9,
+      "ke": 50
+    },
+    {
+      "dari": 50,
+      "ke": 51
+    },
+    {
+      "dari": 11,
+      "ke": 51
+    },
+    {
+      "dari": 51,
+      "ke": 34
+    },
+    {
+      "dari": 13,
+      "ke": 36
+    },
+    {
+      "dari": 14,
+      "ke": 52
+    },
+    {
+      "dari": 15,
+      "ke": 52
+    },
+    {
+      "dari": 16,
+      "ke": 52
+    },
+    {
+      "dari": 52,
+      "ke": 30
+    },
+    {
+      "dari": 17,
+      "ke": 53
+    },
+    {
+      "dari": 53,
+      "ke": 29
+    },
+    {
+      "dari": 44,
+      "ke": 54
+    },
+    {
+      "dari": 54,
+      "ke": 43
+    },
+    {
+      "dari": 24,
+      "ke": 54
+    },
+    {
+      "dari": 24,
+      "ke": 23
+    },
+    {
+      "dari": 7,
+      "ke": 6
+    },
+    {
+      "dari": 9,
+      "ke": 47
+    },
+    {
+      "dari": 13,
+      "ke": 14
+    }
+  ],
+  "lebar_imej": 1194,
+  "tinggi_imej": 794
+}

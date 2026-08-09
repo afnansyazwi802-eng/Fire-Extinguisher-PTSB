@@ -1,0 +1,306 @@
+{
+  "aras_zon": "ARAS 1",
+  "nod": [
+    {
+      "id": 1,
+      "x": 290,
+      "y": 195,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 2,
+      "x": 455,
+      "y": 195,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 3,
+      "x": 510,
+      "y": 195,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 4,
+      "x": 510,
+      "y": 235,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 5,
+      "x": 650,
+      "y": 235,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 6,
+      "x": 760,
+      "y": 235,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 7,
+      "x": 860,
+      "y": 235,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 8,
+      "x": 945,
+      "y": 200,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 9,
+      "x": 985,
+      "y": 175,
+      "label": "1",
+      "jenis": "berkumpul"
+    },
+    {
+      "id": 10,
+      "x": 510,
+      "y": 300,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 11,
+      "x": 510,
+      "y": 400,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 12,
+      "x": 510,
+      "y": 555,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 13,
+      "x": 440,
+      "y": 400,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 14,
+      "x": 905,
+      "y": 300,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 15,
+      "x": 905,
+      "y": 400,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 16,
+      "x": 905,
+      "y": 490,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 17,
+      "x": 845,
+      "y": 500,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 18,
+      "x": 650,
+      "y": 555,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 19,
+      "x": 760,
+      "y": 555,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 20,
+      "x": 845,
+      "y": 555,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 21,
+      "x": 905,
+      "y": 555,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 22,
+      "x": 845,
+      "y": 650,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 23,
+      "x": 900,
+      "y": 700,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 24,
+      "x": 650,
+      "y": 600,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 25,
+      "x": 655,
+      "y": 750,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 26,
+      "x": 655,
+      "y": 870,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 27,
+      "x": 655,
+      "y": 1000,
+      "label": "2",
+      "jenis": "berkumpul"
+    }
+  ],
+  "laluan": [
+    {
+      "dari": 1,
+      "ke": 2
+    },
+    {
+      "dari": 2,
+      "ke": 3
+    },
+    {
+      "dari": 3,
+      "ke": 4
+    },
+    {
+      "dari": 4,
+      "ke": 5
+    },
+    {
+      "dari": 5,
+      "ke": 6
+    },
+    {
+      "dari": 6,
+      "ke": 7
+    },
+    {
+      "dari": 7,
+      "ke": 8
+    },
+    {
+      "dari": 8,
+      "ke": 9
+    },
+    {
+      "dari": 4,
+      "ke": 10
+    },
+    {
+      "dari": 10,
+      "ke": 11
+    },
+    {
+      "dari": 11,
+      "ke": 12
+    },
+    {
+      "dari": 11,
+      "ke": 13
+    },
+    {
+      "dari": 6,
+      "ke": 14
+    },
+    {
+      "dari": 14,
+      "ke": 15
+    },
+    {
+      "dari": 15,
+      "ke": 16
+    },
+    {
+      "dari": 16,
+      "ke": 17
+    },
+    {
+      "dari": 12,
+      "ke": 18
+    },
+    {
+      "dari": 18,
+      "ke": 19
+    },
+    {
+      "dari": 19,
+      "ke": 20
+    },
+    {
+      "dari": 20,
+      "ke": 21
+    },
+    {
+      "dari": 21,
+      "ke": 17
+    },
+    {
+      "dari": 20,
+      "ke": 22
+    },
+    {
+      "dari": 22,
+      "ke": 23
+    },
+    {
+      "dari": 18,
+      "ke": 24
+    },
+    {
+      "dari": 24,
+      "ke": 25
+    },
+    {
+      "dari": 25,
+      "ke": 26
+    },
+    {
+      "dari": 26,
+      "ke": 27
+    }
+  ],
+  "lebar_imej": 1800,
+  "tinggi_imej": 1272
+}

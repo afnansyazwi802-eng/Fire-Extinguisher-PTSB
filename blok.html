@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Pilih Blok — Fire Extinguisher Locator</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#7A1913" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root { --merah:#B3261E; --merah-terang:#D4291F; --merah-gelap:#7A1913; --emas:#C99A2E; --emas-terang:#E5BE5E;
+    --gelap:#1B1B1B; --malap:#7A7A7A; --garis:#EFEAE6; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; background:#fff; color:var(--gelap); font-family:-apple-system,"Segoe UI",Roboto,sans-serif; }
+  a,button { text-decoration:none; color:inherit; font-family:inherit; }
+  #app { max-width:480px; margin:0 auto; min-height:100%; padding-bottom:calc(70px + env(safe-area-inset-bottom)); }
+  header { background:linear-gradient(160deg, var(--merah-terang), var(--merah-gelap)); padding:16px 18px 20px;
+    display:flex; align-items:center; gap:12px; }
+  header a.balik { flex:none; width:34px; height:34px; border-radius:10px; background:rgba(0,0,0,.18);
+    color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  header h1 { color:#fff; font-size:16px; margin:0; font-weight:800; letter-spacing:.3px; }
+  header p { color:rgba(255,255,255,.8); font-size:11.5px; margin:2px 0 0; }
+  main { padding:22px 18px 10px; }
+  .keterangan { font-size:12.5px; color:var(--malap); line-height:1.6; margin:0 2px 18px; }
+  .keterangan b { color:var(--gelap); }
+
+  .grid-blok { display:flex; gap:12px; }
+  .blok-kad { flex:1; aspect-ratio:1/1; border-radius:16px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:8px; text-align:center; padding:8px; position:relative; }
+
+  .blok-kad.aktif { background:linear-gradient(150deg, var(--merah-terang), var(--merah-gelap)); color:#fff;
+    box-shadow:0 10px 20px rgba(179,38,30,.28); }
+  .blok-kad.aktif b { font-size:14px; font-weight:800; letter-spacing:.3px; }
+  .blok-kad.aktif small { font-size:9.5px; color:var(--emas-terang); font-weight:700; letter-spacing:.4px; text-transform:uppercase; }
+
+  .blok-kad.belum { background:#F7F5F3; border:1.5px dashed #DCD6D0; color:var(--malap); }
+  .blok-kad.belum b { font-size:13px; font-weight:700; color:#9a9a9a; }
+  .blok-kad.belum .lencana-belum { position:absolute; top:8px; right:8px; background:#EDE8E3; color:#8a8280;
+    font-size:8px; font-weight:800; letter-spacing:.3px; text-transform:uppercase; padding:3px 6px; border-radius:20px; }
+
+  .ikon-blok { width:34px; height:34px; }
+
+  .nota { display:flex; gap:12px; align-items:flex-start; background:#F8F6F4; border:1px solid var(--garis);
+    border-radius:14px; padding:14px 15px; margin-top:22px; }
+  .nota span.ikon { flex:none; font-size:16px; }
+  .nota p { margin:0; font-size:12px; color:#4a4a4a; line-height:1.6; }
+
+  #nav-bawah { position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; display:flex;
+    background:linear-gradient(180deg, var(--merah-terang), var(--merah-gelap));
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom)); box-shadow:0 -4px 14px rgba(0,0,0,.18); z-index:20; }
+  #nav-bawah a { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px;
+    color:rgba(255,255,255,.65); font-size:10.5px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; position:relative; }
+  #nav-bawah a.aktif { color:var(--emas-terang); }
+  #nav-bawah a.aktif::before { content:""; position:absolute; top:-8px; width:24px; height:3px; border-radius:3px; background:var(--emas-terang); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a href="index.html" class="balik" aria-label="Kembali">←</a>
+    <div>
+      <h1>Pilih Blok</h1>
+      <p>Pilih bangunan untuk lihat pelan &amp; laluan kecemasan</p>
+    </div>
+  </header>
+
+  <main>
+    <p class="keterangan">
+      Buat masa ini sistem <b>hanya lengkap untuk Blok K (JKA)</b>.
+      Blok-blok lain akan ditambah secara berperingkat.
+    </p>
+
+    <div class="grid-blok">
+      <a class="blok-kad aktif" href="peta.html">
+        <svg class="ikon-blok" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 11h.01M15 11h.01M9 15h.01M15 15h.01"/>
+        </svg>
+        <b>JKA</b>
+        <small>Blok K</small>
+      </a>
+
+      <div class="blok-kad belum" role="button" aria-disabled="true">
+        <span class="lencana-belum">Akan Datang</span>
+        <svg class="ikon-blok" viewBox="0 0 24 24" fill="none" stroke="#b7b0a9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/>
+        </svg>
+        <b>(LAIN 2)</b>
+      </div>
+
+      <div class="blok-kad belum" role="button" aria-disabled="true">
+        <span class="lencana-belum">Akan Datang</span>
+        <svg class="ikon-blok" viewBox="0 0 24 24" fill="none" stroke="#b7b0a9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/>
+        </svg>
+        <b>(LAIN 1)</b>
+      </div>
+    </div>
+
+    <div class="nota">
+      <span class="ikon">💡</span>
+      <p>Blok "(Lain 1)" &amp; "(Lain 2)" cuma tempat letak — boleh ditambah kemudian oleh kumpulan
+      sendiri atau pihak lain bila data pelan lantai blok berkenaan dah sedia.</p>
+    </div>
+  </main>
+
+  <nav id="nav-bawah">
+    <a href="index.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+    <a href="blok.html" class="aktif"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.58 7-13a7 7 0 1 0-14 0c0 5.42 7 13 7 13Z"/><circle cx="12" cy="9" r="2.4"/></svg>Map</a>
+    <a href="panduan.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3.4v5.7c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6.4Z"/><path d="M8.7 12.2l2.3 2.3 4.4-4.7"/></svg>Guide</a>
+    <a href="tetapan.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+{
+  "lebar_imej": 1800,
+  "tinggi_imej": 1272,
+  "alat_pemadam_api": [
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/71",
+      "no_siri_bomba": "SR022025Y041319",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 1064.3,
+      "y": 307.2
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/72",
+      "no_siri_bomba": "SR022025Y041404",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 1174.7,
+      "y": 785.6
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/73",
+      "no_siri_bomba": "SR032025Y093226",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 1261.4,
+      "y": 537.7
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/74",
+      "no_siri_bomba": "SR032025Y086185",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 608.2,
+      "y": 272.8
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/75",
+      "no_siri_bomba": "SR022025Y041522",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 898.0,
+      "y": 784.5
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/76",
+      "no_siri_bomba": "SR022025Y042393",
+      "jenis": "ABC",
+      "lokasi": "BILIK HOSE REEL",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 682.3,
+      "y": 796.8
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/77",
+      "no_siri_bomba": "SR032025Y093253",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 1371.5,
+      "y": 306.0
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/78",
+      "no_siri_bomba": "SR022025Y039279",
+      "jenis": "ABC",
+      "lokasi": "BILIK PENSYARAH",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 949.1,
+      "y": 788.3
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/79",
+      "no_siri_bomba": "SR022025Y042103",
+      "jenis": "ABC",
+      "lokasi": "BILIK PENSYARAH",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 947.6,
+      "y": 968.6
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/80",
+      "no_siri_bomba": "SR032025Y093236",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 762.2,
+      "y": 487.8
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/81",
+      "no_siri_bomba": "SR022025Y039276",
+      "jenis": "ABC",
+      "lokasi": "DEWAN KULIAH",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 375.3,
+      "y": 648.8
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/82",
+      "no_siri_bomba": "SR022025Y042231",
+      "jenis": "ABC",
+      "lokasi": "DEWAN KULIAH",
+      "aras_zon": "ARAS 1",
+      "status": "AKTIF",
+      "x": 531.2,
+      "y": 487.9
+    }
+  ]
+}

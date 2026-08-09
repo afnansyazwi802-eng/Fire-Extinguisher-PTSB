@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Fire Extinguisher Locator — Civil Engineering Department, JKA PTSB</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#7A1913" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root {
+    --merah:#B3261E; --merah-terang:#D4291F; --merah-gelap:#7A1913;
+    --emas:#C99A2E; --emas-terang:#E5BE5E;
+    --gelap:#1B1B1B; --malap:#7A7A7A; --garis:#EFEAE6; --latar:#FFFFFF;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; padding:0; background:var(--latar); color:var(--gelap);
+    font-family:-apple-system,"Segoe UI",Roboto,sans-serif; overscroll-behavior:none; }
+  a { text-decoration:none; color:inherit; }
+  #app { max-width:480px; margin:0 auto; min-height:100%; position:relative;
+    padding-bottom:calc(70px + env(safe-area-inset-bottom)); background:var(--latar); }
+
+  /* ---------- jalur serong atas ---------- */
+  #jalur { height:10px; width:100%;
+    background:repeating-linear-gradient(45deg, var(--gelap) 0 10px, var(--emas) 10px 20px); }
+
+  /* ---------- hero merah ---------- */
+  #hero { position:relative; overflow:hidden; text-align:center;
+    background:linear-gradient(160deg, var(--merah-terang) 0%, var(--merah-gelap) 100%);
+    padding:36px 26px 42px; }
+  /* Lapisan gambar latar (opsyenal). Kalau fail gambar/latar-hero.jpg tiada,
+     lapisan ni jadi lutsinar & gradient #hero asal di atas tetap terpapar. */
+  #hero-foto { position:absolute; inset:0; z-index:1;
+    background-image: linear-gradient(160deg, rgba(122,25,19,.55) 0%, rgba(122,25,19,.82) 100%), url('gambar/latar-hero.jpg');
+    background-size:cover; background-position:center; }
+  #hero-bg { position:absolute; inset:0; opacity:.08; pointer-events:none; z-index:2; }
+  #hero-inner { position:relative; z-index:2; }
+
+  .lencana-pemadam { width:100px; height:100px; margin:0 auto 18px; border-radius:24px; background:#fff;
+    padding:7px; box-shadow:0 16px 30px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.25); }
+  .lencana-pemadam img { width:100%; height:100%; object-fit:cover; border-radius:17px; display:block; }
+
+  h1.tajuk1 { margin:0; color:#fff; font-size:21px; font-weight:800; letter-spacing:1.5px; line-height:1.2; }
+  h1.tajuk2 { margin:2px 0 16px; color:#fff; font-size:38px; font-weight:900; letter-spacing:1px; line-height:1; }
+
+  .baris-jabatan { display:flex; align-items:center; gap:10px; margin:0 6px 14px; }
+  .baris-jabatan .garisan { flex:1; height:1.5px; background:var(--emas-terang); opacity:.85; }
+  .baris-jabatan span { flex:none; color:var(--emas-terang); font-size:11.5px; font-weight:700;
+    letter-spacing:2px; text-transform:uppercase; white-space:nowrap; }
+
+  .slogan { margin:0 0 18px; color:rgba(255,255,255,.95); font-size:16px; font-weight:500; letter-spacing:.3px; }
+
+  .baris-pemisah { display:flex; align-items:center; gap:10px; margin:0 30px; }
+  .baris-pemisah .garisan { flex:1; height:1px; background:rgba(255,255,255,.35); }
+  .lencana-kecil { flex:none; width:26px; height:26px; border-radius:50%; border:1.5px solid rgba(255,255,255,.45);
+    display:flex; align-items:center; justify-content:center; }
+
+  /* ---------- kandungan putih ---------- */
+  #kandungan { padding:26px 20px 10px; }
+
+  #btn-cari { display:flex; align-items:center; gap:14px; width:100%; border:none; cursor:pointer;
+    background:linear-gradient(135deg, var(--merah-terang), var(--merah)); color:#fff;
+    border-radius:16px; padding:16px 18px; box-shadow:0 10px 20px rgba(179,38,30,.28); margin-bottom:20px; }
+  #btn-cari .bulatan-pin { flex:none; width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,.18);
+    display:flex; align-items:center; justify-content:center; }
+  #btn-cari .teks { flex:1; text-align:left; font-weight:800; font-size:15.5px; letter-spacing:.3px; line-height:1.35;
+    text-transform:uppercase; }
+  #btn-cari .anak-panah { flex:none; opacity:.9; }
+
+  .grid-kad { display:grid; grid-template-columns:1fr 1fr; gap:13px; margin-bottom:20px; }
+  .kad { display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px;
+    background:#fff; border:1px solid var(--garis); border-radius:15px; padding:20px 8px;
+    box-shadow:0 3px 10px rgba(20,20,20,.05); }
+  .kad .ikon-bulat { width:46px; height:46px; display:flex; align-items:center; justify-content:center; }
+  .kad span { font-size:12.5px; font-weight:800; letter-spacing:.2px; color:var(--gelap); text-transform:uppercase; line-height:1.3; }
+
+  #peringatan { display:flex; align-items:center; gap:14px; background:#FBE9E7; border:1px solid #F6D3CF;
+    border-radius:15px; padding:16px; margin-bottom:16px; }
+  #peringatan .loceng { flex:none; width:44px; height:44px; border-radius:50%; background:var(--merah);
+    display:flex; align-items:center; justify-content:center; }
+  #peringatan .isi { flex:1; }
+  #peringatan .isi b { display:block; color:var(--merah); font-size:13px; letter-spacing:.4px; margin-bottom:3px; }
+  #peringatan .isi p { margin:0; font-size:12.5px; color:#4a4a4a; line-height:1.5; }
+  #peringatan .pintu { flex:none; opacity:.35; }
+
+  /* ---------- nav bawah ---------- */
+  #nav-bawah { position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto;
+    display:flex; background:linear-gradient(180deg, var(--merah-terang), var(--merah-gelap));
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom)); box-shadow:0 -4px 14px rgba(0,0,0,.18); z-index:20; }
+  #nav-bawah a { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px;
+    color:rgba(255,255,255,.65); font-size:10.5px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; position:relative; }
+  #nav-bawah a.aktif { color:var(--emas-terang); }
+  #nav-bawah a.aktif::before { content:""; position:absolute; top:-8px; width:24px; height:3px; border-radius:3px; background:var(--emas-terang); }
+
+  @media (min-width:481px) {
+    #app { box-shadow:0 0 40px rgba(0,0,0,.12); min-height:100vh; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="jalur"></div>
+
+  <section id="hero">
+    <div id="hero-foto"></div>
+    <svg id="hero-bg" viewBox="0 0 400 260" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="140" width="30" height="120" fill="#fff"/>
+      <rect x="46" y="110" width="24" height="150" fill="#fff"/>
+      <rect x="300" y="120" width="26" height="140" fill="#fff"/>
+      <rect x="332" y="150" width="34" height="110" fill="#fff"/>
+      <line x1="60" y1="90" x2="60" y2="150" stroke="#fff" stroke-width="3"/>
+      <line x1="20" y1="105" x2="100" y2="105" stroke="#fff" stroke-width="3"/>
+      <line x1="60" y1="105" x2="95" y2="130" stroke="#fff" stroke-width="3"/>
+    </svg>
+
+    <div id="hero-inner">
+      <div class="lencana-pemadam">
+        <img src="simbol/pemadam.png" alt="Alat Pemadam Api">
+      </div>
+
+      <h1 class="tajuk1">FIRE EXTINGUISHER</h1>
+      <h1 class="tajuk2">LOCATOR</h1>
+
+      <div class="baris-jabatan">
+        <span class="garisan"></span>
+        <span>Civil Engineering Department</span>
+        <span class="garisan"></span>
+      </div>
+
+      <p class="slogan">Locate. Act. Stay Safe.</p>
+
+      <div class="baris-pemisah">
+        <span class="garisan"></span>
+        <span class="lencana-kecil">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 4l7 3v5c0 5-3.4 7.8-7 9-3.6-1.2-7-4-7-9V7l7-3Z"/><path d="M12 10v5M9.5 12.5h5"/></svg>
+        </span>
+        <span class="garisan"></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="kandungan">
+    <a id="btn-cari" href="blok.html">
+      <span class="bulatan-pin">
+        <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 22s7-7.58 7-13a7 7 0 1 0-14 0c0 5.42 7 13 7 13Z" fill="#fff"/><circle cx="12" cy="9" r="2.6" fill="#B3261E"/></svg>
+      </span>
+      <span class="teks">Find Nearest<br>Fire Extinguisher</span>
+      <svg class="anak-panah" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+
+    <div class="grid-kad">
+      <a class="kad" href="blok.html">
+        <span class="ikon-bulat">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#B3261E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2Z"/><path d="M9 4v14M15 6v14"/></svg>
+        </span>
+        <span>Floor Map</span>
+      </a>
+      <a class="kad" href="senarai.html">
+        <span class="ikon-bulat">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#B3261E" stroke-width="2.2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1.3" fill="#B3261E" stroke="none"/><circle cx="3.5" cy="12" r="1.3" fill="#B3261E" stroke="none"/><circle cx="3.5" cy="18" r="1.3" fill="#B3261E" stroke="none"/></svg>
+        </span>
+        <span>Extinguisher List</span>
+      </a>
+      <a class="kad" href="panduan.html">
+        <span class="ikon-bulat">
+          <svg width="36" height="36" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2l8 3.2v6C20 16.8 16.6 20.6 12 22 7.4 20.6 4 16.8 4 11.2v-6Z" fill="#B3261E"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9" stroke="#fff" stroke-width="2.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span>Safety Guide</span>
+      </a>
+      <a class="kad" href="tentang.html">
+        <span class="ikon-bulat">
+          <svg width="36" height="36" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#B3261E"/><line x1="12" y1="11" x2="12" y2="16.3" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1.3" fill="#fff"/></svg>
+        </span>
+        <span>About App</span>
+      </a>
+    </div>
+
+    <div id="peringatan">
+      <span class="loceng">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a5 5 0 0 0-5 5v3.4c0 .7-.2 1.3-.7 1.9L5 15.6h14l-1.3-2.3c-.5-.6-.7-1.2-.7-1.9V8a5 5 0 0 0-5-5Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
+      </span>
+      <div class="isi">
+        <b>SAFETY REMINDER</b>
+        <p>In case of fire, use the nearest fire extinguisher and alert others immediately.</p>
+      </div>
+      <svg class="pintu" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="3" width="12" height="18" rx="1"/>
+        <circle cx="17" cy="9" r="1" fill="#8a8a8a" stroke="none"/>
+        <circle cx="20" cy="14" r="2"/>
+        <path d="M18.5 16.3 L15.5 21"/>
+        <path d="M21.3 16.3 L23 21"/>
+      </svg>
+    </div>
+  </section>
+
+  <nav id="nav-bawah">
+    <a href="index.html" class="aktif">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 2.5 11h3V21h5v-6h3v6h5V11h3Z"/></svg>
+      Home
+    </a>
+    <a href="blok.html">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.58 7-13a7 7 0 1 0-14 0c0 5.42 7 13 7 13Z"/><circle cx="12" cy="9" r="2.4"/></svg>
+      Map
+    </a>
+    <a href="panduan.html">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3.4v5.7c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6.4Z"/><path d="M8.7 12.2l2.3 2.3 4.4-4.7"/></svg>
+      Guide
+    </a>
+    <a href="tetapan.html">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+      Settings
+    </a>
+  </nav>
+
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(console.warn));
+}
+</script>
+</body>
+</html>

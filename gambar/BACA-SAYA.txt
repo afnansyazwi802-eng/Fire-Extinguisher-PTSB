@@ -1,0 +1,32 @@
+PANDUAN LETAK GAMBAR — MUKA DEPAN (index.html)
+========================================================
+
+Letakkan fail gambar terus dalam folder "gambar/" ni (sama tempat
+fail ni berada), guna NAMA FAIL YANG TEPAT macam di bawah — index.html
+dah disediakan untuk terus cari nama-nama ni, TIADA PERLU UBAH KOD.
+
+NOTA: Badge alat pemadam di atas hero kini guna simbol rasmi terus
+dari folder simbol/pemadam.png (sama simbol yang dipakai di Peta &
+Editor) — tak perlu upload gambar berasingan untuk bahagian tu lagi.
+
+
+GAMBAR LATAR BELAKANG HERO (bahagian merah paling atas)
+--------------------------------------------------------------------
+Nama fail   : latar-hero.jpg
+Lokasi      : gambar/latar-hero.jpg
+
+Cadangan:
+- Boleh guna JPEG biasa (tak perlu lutsinar) — contoh foto bangunan,
+  tapak projek, atau lorong/koridor sebenar Blok K.
+- Kod dah letak lapisan warna merah separuh lutsinar DI ATAS gambar
+  ni secara automatik (supaya teks putih/emas tetap jelas dibaca),
+  jadi gambar asal tak perlu terlalu gelap atau terang.
+- Saiz disyorkan: sekurang-kurangnya 800x600px, orientasi mendatar
+  (landskap), fail bawah 500KB supaya app cepat dimuatkan.
+- Kalau fail ni tiada langsung, tiada masalah — hero akan terus
+  papar gradient warna merah asal macam sebelum ni (tiada apa
+  akan "pecah" atau kosong).
+
+Nak buang balik gambar latar dan guna gradient asal sahaja — cuma
+padam/alih keluar fail gambar dari folder ni. Kod akan automatik
+kembali ke paparan asal, tiada perlu ubah index.html.

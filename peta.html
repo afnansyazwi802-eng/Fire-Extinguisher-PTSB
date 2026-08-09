@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Peta Laluan — Fire Extinguisher Locator, JKA PTSB</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#B3261E" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root {
+    --merah:#B3261E; --hijau:#1E7B45; --biru:#2E6FC9; --oren:#C99A2E; --latar:#14181B;
+    --kad:#1F2428; --teks:#EDEFF1; --teks-malap:#9AA3A9; --garis:#2C3338;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; font-family:-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--latar); color:var(--teks); overscroll-behavior:none; }
+  #app { display:flex; flex-direction:column; height:100%; }
+  header { background:linear-gradient(180deg,var(--merah) 0%,#7A1913 100%); padding:10px 14px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 8px rgba(0,0,0,.35); z-index:10; flex:none; flex-wrap:wrap; }
+  #btn-balik { flex:none; width:32px; height:32px; border-radius:9px; background:rgba(0,0,0,.2); color:#fff; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px; }
+  header h1 { font-size:13.5px; margin:0; line-height:1.3; }
+  header p { margin:1px 0 0; font-size:10px; color:rgba(255,255,255,.75); }
+
+  #strip-tingkat { flex:none; background:#171b1d; border-bottom:1px solid var(--garis); overflow-x:auto;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  #strip-tingkat::-webkit-scrollbar { display:none; }
+  #tab-tingkat { display:flex; gap:6px; padding:8px 12px; width:max-content; }
+  #tab-tingkat button { border:1px solid var(--garis); background:#0d1012; color:#fff; flex:none;
+    padding:7px 13px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  #tab-tingkat button.aktif { background:var(--oren); border-color:var(--oren); color:#1a1a1a; }
+
+  #kandungan { flex:1; position:relative; min-height:0; overflow:hidden; }
+  #peta-bekas { position:absolute; inset:0; overflow:hidden; background:#0d1012; touch-action:none; }
+  #peta-viewport { position:absolute; top:0; left:0; transform-origin:0 0; will-change:transform; }
+  #peta-wrap { position:relative; }
+  #peta-img { display:block; user-select:none; -webkit-user-drag:none; pointer-events:none; }
+  #peta-canvas { position:absolute; top:0; left:0; pointer-events:none; touch-action:none; }
+  #memuat { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--teks-malap); font-size:13px; background:#0d1012; z-index:5; }
+
+  .kawalan-zum { position:absolute; right:12px; bottom:14px; display:flex; flex-direction:column; gap:6px; z-index:6; }
+  .kawalan-zum button { width:38px; height:38px; border-radius:10px; border:1px solid var(--garis); background:var(--kad);
+    color:#fff; font-size:18px; font-weight:700; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,.3); }
+  .kawalan-zum button#btn-fit { font-size:13px; }
+
+  #popup-peta { position:absolute; z-index:8; background:#fff; color:#1a1a1a; border-radius:12px; padding:12px 14px;
+    box-shadow:0 10px 26px rgba(0,0,0,.4); min-width:170px; max-width:230px; display:none; transform:translate(-50%,-100%); margin-top:-14px; }
+  #popup-peta.tunjuk { display:block; }
+  #popup-peta::after { content:""; position:absolute; left:50%; bottom:-7px; transform:translateX(-50%);
+    border-left:7px solid transparent; border-right:7px solid transparent; border-top:7px solid #fff; }
+  #popup-peta #popup-tutup { position:absolute; top:5px; right:7px; border:none; background:none; color:#999; font-size:15px; cursor:pointer; padding:2px 4px; line-height:1; }
+  #popup-peta .p-tajuk { font-size:12.5px; font-weight:800; color:var(--merah); margin:0 16px 4px 0; line-height:1.35; }
+  #popup-peta .p-baris { font-size:11px; color:#555; margin-top:3px; line-height:1.5; }
+  #popup-peta .p-baris b { color:#1a1a1a; }
+  #popup-peta .p-aksi { margin-top:9px; display:block; width:100%; background:var(--merah); color:#fff; border:none;
+    border-radius:7px; padding:7px; font-size:11.5px; font-weight:700; cursor:pointer; text-align:center; }
+
+  .kotak-cari { position:absolute; left:12px; top:12px; z-index:6; background:var(--kad); border:1px solid var(--garis);
+    border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,.3); overflow:hidden; width:200px; }
+  .kotak-cari input { width:100%; border:none; background:transparent; color:#fff; padding:9px 12px; font-size:12.5px; outline:none; }
+  .hasil-cari { max-height:220px; overflow-y:auto; border-top:1px solid var(--garis); display:none; }
+  .hasil-cari.tunjuk { display:block; }
+  .hasil-cari div { padding:8px 12px; font-size:11.5px; color:var(--teks-malap); border-bottom:1px solid var(--garis); cursor:pointer; }
+  .hasil-cari div:hover { background:#171b1d; color:#fff; }
+  .hasil-cari div b { color:#fff; display:block; font-size:12px; }
+
+  #pill-kiraan { position:absolute; left:12px; bottom:14px; z-index:7; background:var(--kad); border:1px solid var(--garis);
+    color:#fff; font-size:12px; font-weight:700; padding:10px 14px; border-radius:12px; cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,.3); display:flex; align-items:center; gap:6px; }
+  #pill-kiraan .panah { font-size:10px; color:var(--teks-malap); }
+
+  #sisi { position:absolute; z-index:9; background:var(--kad); border-left:1px solid var(--garis);
+    box-shadow:-8px 0 24px rgba(0,0,0,.4); transition:transform .28s ease; overflow-y:auto; padding:18px;
+    display:flex; flex-direction:column; gap:16px; top:0; right:0; bottom:0; width:260px; transform:translateX(100%); }
+  #sisi.buka { transform:translateX(0); }
+  #sisi-tutup { align-self:flex-end; background:none; border:none; color:var(--teks-malap); font-size:20px; cursor:pointer; margin:-6px -6px -10px 0; }
+  #skrin-gelap { position:absolute; inset:0; background:rgba(0,0,0,.35); z-index:8; display:none; }
+  #skrin-gelap.tunjuk { display:block; }
+  label.tajuk { font-size:10.5px; color:var(--teks-malap); text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:8px; }
+  .statpill { display:flex; justify-content:space-between; font-size:12px; padding:6px 0; border-bottom:1px solid var(--garis); }
+  .statpill:last-child { border-bottom:none; }
+  .statpill b { color:#fff; }
+  .togol-row { display:flex; gap:8px; }
+  .togol { flex:1; background:#171b1d; border:1px solid var(--garis); color:var(--teks-malap); border-radius:9px; padding:8px 6px; font-size:11px; text-align:center; cursor:pointer; }
+  .togol.hidup { border-color:var(--oren); color:#fff; background:rgba(201,154,46,.15); }
+  .togol.lumpuh { opacity:.4; pointer-events:none; }
+  button#btn-reset { background:#171b1d; border:1px solid var(--garis); color:var(--teks); border-radius:9px; padding:10px; font-size:12.5px; cursor:pointer; width:100%; }
+  #legenda { display:flex; flex-direction:column; gap:9px; font-size:11.5px; color:var(--teks-malap); }
+  #legenda div { display:flex; align-items:center; gap:9px; }
+  .lc-ikon { width:22px; height:22px; border-radius:5px; flex:none; object-fit:contain; background:#0d1012; }
+  .lc-dot { width:16px; height:16px; border-radius:4px; flex:none; display:flex; align-items:center; justify-content:center; font-size:9px; }
+  .catatan { font-size:10.5px; color:var(--teks-malap); line-height:1.5; border-top:1px solid var(--garis); padding-top:12px; }
+  #nota-tiada-laluan { display:none; font-size:11px; color:var(--oren); background:rgba(201,154,46,.1); border:1px solid rgba(201,154,46,.35);
+    border-radius:9px; padding:9px 11px; line-height:1.5; }
+  @media (max-width: 760px) {
+    #sisi { left:0; right:0; top:auto; bottom:0; width:auto; max-height:72vh; border-left:none;
+      border-top:1px solid var(--garis); border-radius:18px 18px 0 0; transform:translateY(100%); }
+    #sisi.buka { transform:translateY(0); }
+    .kotak-cari { width:150px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a href="blok.html" id="btn-balik" title="Kembali ke Pilih Blok" aria-label="Kembali ke Pilih Blok">←</a>
+    <div>
+      <h1>Laluan Kecemasan — Blok K, JKA PTSB</h1>
+      <p>Klik atas pelan untuk cari alat pemadam terdekat</p>
+    </div>
+  </header>
+  <div id="strip-tingkat"><div id="tab-tingkat"></div></div>
+
+  <div id="kandungan">
+    <div id="peta-bekas">
+      <div class="kotak-cari">
+        <input type="text" id="input-cari" placeholder="Cari lokasi / no. siri..." autocomplete="off">
+        <div class="hasil-cari" id="hasil-cari"></div>
+      </div>
+
+      <div id="peta-viewport">
+        <div id="peta-wrap">
+          <img id="peta-img" alt="Pelan lantai" />
+          <canvas id="peta-canvas"></canvas>
+        </div>
+      </div>
+      <div id="memuat">Memuatkan pelan...</div>
+      <div id="popup-peta"><button id="popup-tutup">×</button><div id="popup-isi"></div></div>
+
+      <div id="pill-kiraan"><span id="teks-kiraan">—</span><span class="panah">▲</span></div>
+
+      <div class="kawalan-zum">
+        <button id="btn-zum-masuk" title="Zum masuk">+</button>
+        <button id="btn-zum-keluar" title="Zum keluar">−</button>
+        <button id="btn-fit" title="Papar penuh">⤢</button>
+      </div>
+    </div>
+
+    <div id="skrin-gelap"></div>
+    <div id="sisi">
+      <button id="sisi-tutup" aria-label="Tutup">×</button>
+
+      <div id="nota-tiada-laluan">
+        ℹ️ Rangkaian laluan terperinci belum tersedia untuk tingkat ini — hanya lokasi alat pemadam api dipaparkan buat masa ini.
+      </div>
+
+      <div>
+        <label class="tajuk">Paparan Lapisan</label>
+        <div class="togol-row">
+          <div class="togol hidup" id="togol-rangkaian">➰ Rangkaian</div>
+          <div class="togol hidup" id="togol-pemadam">🧯 Pemadam Api</div>
+        </div>
+      </div>
+
+      <div>
+        <label class="tajuk">Legenda</label>
+        <div id="legenda">
+          <div><span class="lc-dot" style="background:#B3261E; border-radius:50%;"></span> Lokasi anda (klik)</div>
+          <div><img class="lc-ikon" src="simbol/tangga.svg" alt=""> Tangga / Laluan Keluar</div>
+          <div><img class="lc-ikon" src="simbol/berkumpul.png" alt=""> Titik Berkumpul</div>
+          <div><img class="lc-ikon" src="simbol/pemadam.png" alt=""> Alat Pemadam Api</div>
+          <div><span class="lc-dot" style="background:transparent; border:3px solid #111;"></span> Laluan Kecemasan</div>
+        </div>
+      </div>
+
+      <button id="btn-reset">↺ Padam Carian Laluan</button>
+
+      <div class="catatan" id="catatan-tingkat">
+        Sistem ini memuatkan data terus daripada folder <code>floors/</code>. Nak tambah/edit rangkaian laluan untuk
+        Aras 1 &amp; 3, guna <code>editor.html</code>.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let DATA_LALUAN = null, DATA_PEMADAM = null;
+let nodById = {}, adjList = {}, tanggaList = [], berkumpulList = [];
+let titikSaya = null, laluanTerpilih = null;
+let papRangkaian = true, papPemadam = true;
+let SENARAI_TINGKAT = [], TINGKAT_SEMASA = null;
+let popupAktif = null; /* { x, y } dlm koordinat kanvas semula jadi, untuk kekal posisi bila zum/pan */
+
+const img = document.getElementById('peta-img');
+const canvas = document.getElementById('peta-canvas');
+const ctx = canvas.getContext('2d');
+const viewport = document.getElementById('peta-viewport');
+const bekas = document.getElementById('peta-bekas');
+const tabTingkatEl = document.getElementById('tab-tingkat');
+const memuatEl = document.getElementById('memuat');
+const popupEl = document.getElementById('popup-peta');
+const popupIsiEl = document.getElementById('popup-isi');
+
+/* ---------------- Ikon rasmi (ISO 7010 / MS 2558) ---------------- */
+const SUMBER_IKON = { pemadam: 'simbol/pemadam.png', tangga: 'simbol/tangga.svg', berkumpul: 'simbol/berkumpul.png' };
+const IKON = {};
+Object.keys(SUMBER_IKON).forEach(k => { const im = new Image(); im.src = SUMBER_IKON[k]; im.onload = () => lukis(); IKON[k] = im; });
+
+async function muatJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Gagal muat: ' + url);
+  return res.json();
+}
+
+async function mula() {
+  try {
+    SENARAI_TINGKAT = await muatJSON('floors/floors-index.json');
+  } catch (e) {
+    memuatEl.textContent = 'Ralat: gagal muatkan floors-index.json';
+    return;
+  }
+  tabTingkatEl.innerHTML = '';
+  SENARAI_TINGKAT.forEach(f => {
+    const btn = document.createElement('button');
+    btn.textContent = f.nama; btn.dataset.id = f.id;
+    btn.addEventListener('click', () => { if (TINGKAT_SEMASA?.id !== f.id) muatTingkat(f); });
+    tabTingkatEl.appendChild(btn);
+  });
+
+  const paramURL = new URLSearchParams(window.location.search);
+  const tingkatDariURL = paramURL.get('tingkat');
+  const tingkatAwal = SENARAI_TINGKAT.find(f => f.id === tingkatDariURL) || SENARAI_TINGKAT[0];
+  await muatTingkat(tingkatAwal);
+
+  const nodDariURL = paramURL.get('nod');
+  if (nodDariURL) cariLaluanDariNod(Number(nodDariURL));
+
+  const asetDariURL = paramURL.get('aset');
+  if (asetDariURL) {
+    const p = DATA_PEMADAM.alat_pemadam_api.find(pp => pp.no_siri_aset === asetDariURL);
+    if (p) {
+      bukaPopup(p.x, p.y, `<div class="p-tajuk">🧯 Alat Pemadam Api</div>
+        <div class="p-baris"><b>${p.lokasi}</b></div>
+        <div class="p-baris">Jenis: <b>${p.jenis}</b></div>
+        <div class="p-baris">No. Siri Aset: ${p.no_siri_aset}</div>
+        <div class="p-baris">No. Siri Bomba: ${p.no_siri_bomba}</div>`);
+      zumPada(Math.max(zum, 1.6) / zum, bekas.clientWidth/2, bekas.clientHeight/2);
+      ofsX = bekas.clientWidth/2 - p.x*zum;
+      ofsY = bekas.clientHeight/2 - p.y*zum;
+      tetapkanTransform();
+    }
+  }
+}
+
+async function muatTingkat(info) {
+  TINGKAT_SEMASA = info;
+  [...tabTingkatEl.children].forEach(b => b.classList.toggle('aktif', b.dataset.id === info.id));
+
+  memuatEl.style.display = 'flex';
+  memuatEl.textContent = 'Memuatkan ' + info.nama + '...';
+  titikSaya = null; laluanTerpilih = null;
+  resetPanel();
+  tutupPopup();
+
+  DATA_PEMADAM = await muatJSON(info.pemadam);
+  DATA_LALUAN = info.laluan ? await muatJSON(info.laluan) : null;
+
+  document.getElementById('nota-tiada-laluan').style.display = DATA_LALUAN ? 'none' : 'block';
+  document.getElementById('togol-rangkaian').classList.toggle('lumpuh', !DATA_LALUAN);
+  document.getElementById('teks-kiraan').textContent = `${DATA_PEMADAM.alat_pemadam_api.length} unit APK — ${info.nama}`;
+
+  nodById = {}; adjList = {}; tanggaList = []; berkumpulList = [];
+  if (DATA_LALUAN) {
+    DATA_LALUAN.nod.forEach(n => { nodById[n.id] = n; adjList[n.id] = []; });
+    DATA_LALUAN.laluan.forEach(l => {
+      const a = nodById[l.dari], b = nodById[l.ke];
+      if (!a || !b) return;
+      const jarak = Math.hypot(a.x - b.x, a.y - b.y);
+      adjList[l.dari].push({ id: l.ke, jarak });
+      adjList[l.ke].push({ id: l.dari, jarak });
+    });
+    tanggaList = DATA_LALUAN.nod.filter(n => n.jenis === 'tangga');
+    berkumpulList = DATA_LALUAN.nod.filter(n => n.jenis === 'berkumpul');
+  }
+
+  img.src = info.imej;
+  await new Promise(resolve => { img.onload = resolve; });
+  const lebar = DATA_LALUAN ? DATA_LALUAN.lebar_imej : DATA_PEMADAM.lebar_imej;
+  const tinggi = DATA_LALUAN ? DATA_LALUAN.tinggi_imej : DATA_PEMADAM.tinggi_imej;
+  canvas.width = lebar; canvas.height = tinggi;
+  img.style.width = lebar + 'px'; img.style.height = tinggi + 'px';
+  memuatEl.style.display = 'none';
+  lukis();
+  suaiPapar();
+}
+
+/* ---------------- Zum & Pan ---------------- */
+let zum = 1, ofsX = 0, ofsY = 0;
+function tetapkanTransform() {
+  viewport.style.transform = `translate(${ofsX}px, ${ofsY}px) scale(${zum})`;
+  kemaskiniPosisiPopup();
+}
+function suaiPapar() {
+  const rw = bekas.clientWidth, rh = bekas.clientHeight;
+  const iw = canvas.width, ih = canvas.height;
+  if (!iw || !ih) return;
+  zum = Math.min(rw / iw, rh / ih) * 0.96;
+  ofsX = (rw - iw * zum) / 2;
+  ofsY = (rh - ih * zum) / 2;
+  tetapkanTransform();
+}
+function zumPada(faktor, cx, cy) {
+  const zumBaru = Math.min(4, Math.max(0.15, zum * faktor));
+  ofsX = cx - (cx - ofsX) * (zumBaru / zum);
+  ofsY = cy - (cy - ofsY) * (zumBaru / zum);
+  zum = zumBaru;
+  tetapkanTransform();
+}
+
+/* ---------------- Popup klik-pada-simbol ---------------- */
+function bukaPopup(x, y, htmlIsi) {
+  popupAktif = { x, y };
+  popupIsiEl.innerHTML = htmlIsi;
+  popupEl.classList.add('tunjuk');
+  kemaskiniPosisiPopup();
+}
+function tutupPopup() {
+  popupAktif = null;
+  popupEl.classList.remove('tunjuk');
+}
+function kemaskiniPosisiPopup() {
+  if (!popupAktif) return;
+  popupEl.style.left = (ofsX + popupAktif.x * zum) + 'px';
+  popupEl.style.top = (ofsY + popupAktif.y * zum) + 'px';
+}
+document.getElementById('popup-tutup').addEventListener('click', tutupPopup);
+
+/* ---------------- Drawer (panel Legenda/Lapisan) ---------------- */
+const sisiEl = document.getElementById('sisi');
+const gelapEl = document.getElementById('skrin-gelap');
+function bukaDrawer() { sisiEl.classList.add('buka'); gelapEl.classList.add('tunjuk'); }
+function tutupDrawer() { sisiEl.classList.remove('buka'); gelapEl.classList.remove('tunjuk'); }
+document.getElementById('pill-kiraan').addEventListener('click', bukaDrawer);
+document.getElementById('sisi-tutup').addEventListener('click', tutupDrawer);
+gelapEl.addEventListener('click', tutupDrawer);
+
+document.getElementById('btn-zum-masuk').addEventListener('click', () => zumPada(1.3, bekas.clientWidth/2, bekas.clientHeight/2));
+document.getElementById('btn-zum-keluar').addEventListener('click', () => zumPada(1/1.3, bekas.clientWidth/2, bekas.clientHeight/2));
+document.getElementById('btn-fit').addEventListener('click', suaiPapar);
+window.addEventListener('resize', suaiPapar);
+
+bekas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const rect = bekas.getBoundingClientRect();
+  zumPada(e.deltaY < 0 ? 1.12 : 1/1.12, e.clientX - rect.left, e.clientY - rect.top);
+}, { passive:false });
+
+let penunjuk = new Map();
+let seretAktif = false, seretMula = {x:0,y:0}, ofsMula = {x:0,y:0};
+let jarakCubitMula = 0, zumCubitMula = 1;
+
+bekas.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('button, .kotak-cari, #pill-kiraan, #popup-peta')) return; /* elak tangkap klik kawalan terapung */
+  bekas.setPointerCapture(e.pointerId);
+  penunjuk.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (penunjuk.size === 1) {
+    seretAktif = true;
+    seretMula = { x: e.clientX, y: e.clientY };
+    ofsMula = { x: ofsX, y: ofsY };
+  } else if (penunjuk.size === 2) {
+    seretAktif = false;
+    const pts = [...penunjuk.values()];
+    jarakCubitMula = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+    zumCubitMula = zum;
+  }
+});
+bekas.addEventListener('pointermove', (e) => {
+  if (!penunjuk.has(e.pointerId)) return;
+  penunjuk.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (penunjuk.size === 1 && seretAktif) {
+    ofsX = ofsMula.x + (e.clientX - seretMula.x);
+    ofsY = ofsMula.y + (e.clientY - seretMula.y);
+    tetapkanTransform();
+  } else if (penunjuk.size === 2) {
+    const pts = [...penunjuk.values()];
+    const jarakBaru = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+    const rect = bekas.getBoundingClientRect();
+    const tengahX = (pts[0].x+pts[1].x)/2 - rect.left, tengahY = (pts[0].y+pts[1].y)/2 - rect.top;
+    zumPada(jarakBaru / jarakCubitMula, tengahX, tengahY);
+    jarakCubitMula = jarakBaru; zumCubitMula = zum;
+  }
+});
+function lepasPenunjuk(e) {
+  penunjuk.delete(e.pointerId);
+  if (penunjuk.size === 0) seretAktif = false;
+}
+bekas.addEventListener('pointerup', lepasPenunjuk);
+bekas.addEventListener('pointercancel', lepasPenunjuk);
+bekas.addEventListener('pointerleave', lepasPenunjuk);
+
+let gerakSejakTurun = 0;
+bekas.addEventListener('pointerdown', (e) => { gerakSejakTurun = 0; });
+bekas.addEventListener('pointermove', (e) => { gerakSejakTurun++; });
+
+/* ---------------- Lukis ikon rasmi + label ---------------- */
+function lukisIkon(jenis, x, y, s) {
+  const im = IKON[jenis];
+  if (im && im.complete && im.naturalWidth) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 1;
+    ctx.drawImage(im, x - s/2, y - s/2, s, s);
+    ctx.restore();
+  }
+}
+function lukisLabelNod(x, y, s, label) {
+  if (!label) return;
+  const r = s * 0.26, lx = x + s*0.38, ly = y + s*0.38;
+  ctx.beginPath(); ctx.arc(lx, ly, r, 0, Math.PI*2);
+  ctx.fillStyle = '#111'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.font = `bold ${Math.max(9, r*1.15)}px sans-serif`; ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(label, lx, ly + 0.5);
+  ctx.textAlign = 'left';
+}
+
+/* ---------------- Lukisan utama ---------------- */
+function lukis() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!DATA_PEMADAM) return;
+  if (papRangkaian && DATA_LALUAN) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.32)'; ctx.lineWidth = 3;
+    DATA_LALUAN.laluan.forEach(l => {
+      const a = nodById[l.dari], b = nodById[l.ke];
+      if (a && b) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+    });
+  }
+  if (DATA_LALUAN) {
+    tanggaList.forEach(n => { lukisIkon('tangga', n.x, n.y, 30); lukisLabelNod(n.x, n.y, 30, n.label); });
+    berkumpulList.forEach(n => { lukisIkon('berkumpul', n.x, n.y, 30); lukisLabelNod(n.x, n.y, 30, n.label); });
+  }
+  if (papPemadam) {
+    DATA_PEMADAM.alat_pemadam_api.forEach(p => lukisIkon('pemadam', p.x, p.y, 26));
+  }
+  if (laluanTerpilih && laluanTerpilih.length > 1) {
+    ctx.strokeStyle = '#111'; ctx.lineWidth = 6; ctx.setLineDash([12, 7]); ctx.lineCap = 'round';
+    ctx.beginPath();
+    laluanTerpilih.forEach((id, i) => { const n = nodById[id]; if (i === 0) ctx.moveTo(n.x, n.y); else ctx.lineTo(n.x, n.y); });
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  if (titikSaya) {
+    ctx.beginPath(); ctx.arc(titikSaya.x, titikSaya.y, 11, 0, Math.PI*2);
+    ctx.fillStyle = '#B3261E'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+  }
+  kemaskiniPosisiPopup();
+}
+
+function dijkstra(idMula) {
+  const dist = {}, prev = {}, dilawat = new Set();
+  Object.keys(adjList).forEach(id => dist[id] = Infinity);
+  dist[idMula] = 0;
+  const pq = [[0, idMula]];
+  while (pq.length) {
+    pq.sort((a,b) => a[0]-b[0]);
+    const [d, u] = pq.shift();
+    if (dilawat.has(u)) continue;
+    dilawat.add(u);
+    (adjList[u] || []).forEach(edge => {
+      const alt = d + edge.jarak;
+      if (alt < dist[edge.id]) { dist[edge.id] = alt; prev[edge.id] = u; pq.push([alt, edge.id]); }
+    });
+  }
+  return { dist, prev };
+}
+function laluanKe(prev, id) {
+  const laluan = [id];
+  while (prev[id] !== undefined) { id = prev[id]; laluan.unshift(id); }
+  return laluan;
+}
+function nodTerdekat(x, y) {
+  let terbaik = null, jarakMin = Infinity;
+  DATA_LALUAN.nod.forEach(n => { const j = Math.hypot(n.x-x, n.y-y); if (j < jarakMin) { jarakMin = j; terbaik = n; } });
+  return terbaik;
+}
+function pemadamTerdekat(x, y) {
+  let terbaik = null, jarakMin = Infinity;
+  DATA_PEMADAM.alat_pemadam_api.forEach(p => { const j = Math.hypot(p.x-x, p.y-y); if (j < jarakMin) { jarakMin = j; terbaik = p; } });
+  return { p: terbaik, jarak: jarakMin };
+}
+
+function resetPanel() {
+  tutupPopup();
+}
+
+function prosesLaluanDariNodMula(nodMula) {
+  const { dist, prev } = dijkstra(nodMula.id);
+  let terbaikId = null, jarakMin = Infinity;
+  [...tanggaList, ...berkumpulList].forEach(t => { if (dist[t.id] < jarakMin) { jarakMin = dist[t.id]; terbaikId = t.id; } });
+  if (terbaikId === null || jarakMin === Infinity) {
+    laluanTerpilih = null; lukis(); return;
+  }
+  laluanTerpilih = laluanKe(prev, terbaikId);
+  lukis();
+}
+
+function cariLaluanDariNod(nodId) {
+  const n = nodById[nodId];
+  if (!n) return;
+  titikSaya = { x: n.x, y: n.y };
+  prosesLaluanDariNodMula(n);
+}
+
+bekas.addEventListener('click', (e) => {
+  if (e.target.closest('button, .kotak-cari, #pill-kiraan, #popup-peta')) return; /* elak klik kawalan dikira sebagai klik peta */
+  if (gerakSejakTurun > 4) return; /* elak klik ter-trigger lepas seret/pan */
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width * canvas.width;
+  const y = (e.clientY - rect.top) / rect.height * canvas.height;
+  if (x < 0 || y < 0 || x > canvas.width || y > canvas.height) return; /* klik luar pelan */
+
+  if (papPemadam) {
+    const p = DATA_PEMADAM.alat_pemadam_api.find(pp => Math.hypot(pp.x-x, pp.y-y) <= 16);
+    if (p) {
+      bukaPopup(p.x, p.y, `<div class="p-tajuk">🧯 Alat Pemadam Api</div>
+        <div class="p-baris"><b>${p.lokasi}</b></div>
+        <div class="p-baris">Jenis: <b>${p.jenis}</b></div>
+        <div class="p-baris">No. Siri Aset: ${p.no_siri_aset}</div>
+        <div class="p-baris">No. Siri Bomba: ${p.no_siri_bomba}</div>`);
+      return;
+    }
+  }
+  if (DATA_LALUAN) {
+    const nSasaran = [...tanggaList, ...berkumpulList].find(n => Math.hypot(n.x-x, n.y-y) <= 17);
+    if (nSasaran) {
+      const jenisLabel = nSasaran.jenis === 'berkumpul' ? '🎯 Titik Berkumpul' : '🚪 Tangga / Laluan Keluar';
+      bukaPopup(nSasaran.x, nSasaran.y, `<div class="p-tajuk">${jenisLabel}</div>
+        <div class="p-baris">Label: <b>${nSasaran.label || '—'}</b></div>
+        <button class="p-aksi" data-cari="${nSasaran.id}">Cari laluan dari sini</button>`);
+      return;
+    }
+  }
+
+  tutupPopup();
+  titikSaya = { x, y };
+  if (DATA_LALUAN) {
+    const nodMula = nodTerdekat(x, y);
+    prosesLaluanDariNodMula(nodMula);
+  } else {
+    lukis();
+  }
+});
+popupIsiEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-cari]');
+  if (!btn) return;
+  const n = nodById[Number(btn.dataset.cari)];
+  if (!n) return;
+  titikSaya = { x: n.x, y: n.y };
+  prosesLaluanDariNodMula(n);
+  tutupPopup();
+});
+
+document.getElementById('togol-rangkaian').addEventListener('click', function() { if (!DATA_LALUAN) return; papRangkaian = !papRangkaian; this.classList.toggle('hidup'); lukis(); });
+document.getElementById('togol-pemadam').addEventListener('click', function() { papPemadam = !papPemadam; this.classList.toggle('hidup'); lukis(); });
+document.getElementById('btn-reset').addEventListener('click', () => { titikSaya = null; laluanTerpilih = null; resetPanel(); lukis(); });
+
+/* ---------------- Carian ---------------- */
+const inputCari = document.getElementById('input-cari');
+const hasilCariEl = document.getElementById('hasil-cari');
+inputCari.addEventListener('input', () => {
+  const q = inputCari.value.trim().toLowerCase();
+  if (!q || !DATA_PEMADAM) { hasilCariEl.classList.remove('tunjuk'); return; }
+  const hasil = DATA_PEMADAM.alat_pemadam_api.filter(p =>
+    p.lokasi.toLowerCase().includes(q) || p.no_siri_aset.toLowerCase().includes(q) || p.no_siri_bomba.toLowerCase().includes(q)
+  ).slice(0, 8);
+  hasilCariEl.innerHTML = hasil.length
+    ? hasil.map(p => `<div data-x="${p.x}" data-y="${p.y}"><b>${p.lokasi}</b>${p.no_siri_aset} — ${p.jenis}</div>`).join('')
+    : '<div style="cursor:default">Tiada hasil.</div>';
+  hasilCariEl.classList.add('tunjuk');
+});
+hasilCariEl.addEventListener('click', (e) => {
+  const baris = e.target.closest('div[data-x]');
+  if (!baris) return;
+  const x = Number(baris.dataset.x), y = Number(baris.dataset.y);
+  const rw = bekas.clientWidth, rh = bekas.clientHeight;
+  zum = Math.min(2.2, zum * 1.6);
+  ofsX = rw/2 - x*zum; ofsY = rh/2 - y*zum;
+  tetapkanTransform();
+  hasilCariEl.classList.remove('tunjuk'); inputCari.value = '';
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(console.warn));
+}
+
+mula();
+</script>
+</body>
+</html>

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Editor Laluan &amp; Alat — Fire Extinguisher Locator</title>
+<meta name="theme-color" content="#B3261E" />
+<style>
+  :root {
+    --merah:#B3261E; --hijau:#1E7B45; --biru:#2E6FC9; --oren:#C99A2E; --latar:#14181B;
+    --kad:#1F2428; --teks:#EDEFF1; --teks-malap:#9AA3A9; --garis:#2C3338;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; font-family:-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--latar); color:var(--teks); overscroll-behavior:none; }
+  button,select,input { font-family:inherit; }
+  #app { display:flex; flex-direction:column; height:100%; }
+
+  header { background:linear-gradient(180deg,var(--merah) 0%,#7A1913 100%); padding:10px 14px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 8px rgba(0,0,0,.35); z-index:10; flex:none; flex-wrap:wrap; }
+  #btn-balik { flex:none; width:32px; height:32px; border-radius:9px; background:rgba(0,0,0,.2); color:#fff; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px; }
+  header h1 { font-size:13.5px; margin:0; line-height:1.3; }
+  header p { margin:1px 0 0; font-size:10px; color:rgba(255,255,255,.75); }
+
+  #toolbar { background:var(--kad); border-bottom:1px solid var(--garis); padding:9px 12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; flex:none; }
+  #toolbar select { background:#171b1d; color:#fff; border:1px solid var(--garis); border-radius:8px; padding:7px 9px; font-size:12.5px; }
+  .btn { border:1px solid var(--garis); background:#171b1d; color:var(--teks); border-radius:8px; padding:7px 11px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .btn:hover { border-color:#3a4147; }
+  .btn.aktif { background:var(--oren); border-color:var(--oren); color:#1a1a1a; }
+  .btn.hijau { background:var(--hijau); border-color:var(--hijau); color:#fff; }
+  .btn.merah { background:var(--merah); border-color:var(--merah); color:#fff; }
+  .btn:disabled { opacity:.35; cursor:not-allowed; }
+  .pemisah { width:1px; align-self:stretch; background:var(--garis); margin:0 2px; }
+
+  #kandungan { flex:1; display:flex; min-height:0; }
+  #peta-bekas { flex:1; overflow:hidden; background:#0d1012; position:relative; touch-action:none; }
+  #peta-viewport { position:absolute; top:0; left:0; transform-origin:0 0; will-change:transform; }
+  #peta-wrap { position:relative; }
+  #peta-img { display:block; user-select:none; -webkit-user-drag:none; pointer-events:none; }
+  #peta-canvas { position:absolute; top:0; left:0; }
+  #kosong-peta { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; color:var(--teks-malap); font-size:13px; text-align:center; padding:30px; }
+  #kosong-peta .btn { margin-top:6px; }
+
+  .kawalan-zum { position:absolute; right:12px; bottom:14px; display:flex; flex-direction:column; gap:6px; z-index:6; }
+  .kawalan-zum button { width:38px; height:38px; border-radius:10px; border:1px solid var(--garis); background:var(--kad);
+    color:#fff; font-size:18px; font-weight:700; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,.3); }
+  .kawalan-zum button#btn-fit { font-size:13px; }
+
+  #sisi { width:300px; flex:none; background:var(--kad); border-left:1px solid var(--garis); padding:14px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
+  label.tajuk { font-size:10.5px; color:var(--teks-malap); text-transform:uppercase; letter-spacing:.4px; display:block; margin-bottom:5px; }
+  .kad-info { font-size:12px; color:var(--teks-malap); background:#171b1d; border:1px solid var(--garis); border-radius:9px; padding:11px 12px; line-height:1.6; }
+  .medan { margin-bottom:9px; }
+  .medan input[type=text], .medan select { width:100%; background:#171b1d; border:1px solid var(--garis); color:#fff; border-radius:8px; padding:8px 10px; font-size:12.5px; }
+  .medan-inline { display:flex; align-items:center; gap:8px; font-size:12.5px; margin-bottom:9px; }
+  .senarai-mini { display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; }
+  .baris-mini { display:flex; align-items:center; gap:8px; background:#171b1d; border:1px solid var(--garis); border-radius:8px; padding:7px 9px; font-size:11.5px; }
+  .baris-mini span.teks { flex:1; }
+  .baris-mini button { flex:none; background:none; border:none; color:var(--merah); font-size:14px; cursor:pointer; padding:2px 4px; }
+  .baris-mini.armed { border-color:var(--oren); background:rgba(201,154,46,.12); }
+  #statpill-row { display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-bottom:1px solid var(--garis); }
+  #statpill-row:last-child { border-bottom:none; }
+  .legenda-baris { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--teks-malap); }
+  .lc-dot { width:14px; height:14px; border-radius:4px; flex:none; }
+  details { border:1px solid var(--garis); border-radius:9px; background:#171b1d; }
+  details summary { padding:9px 11px; font-size:12px; font-weight:700; cursor:pointer; color:#fff; }
+  details .isi { padding:0 11px 11px; font-size:11.5px; color:var(--teks-malap); line-height:1.65; }
+  details .isi b { color:#fff; }
+  .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:#1a1e21; border:1px solid var(--garis);
+    color:#fff; padding:10px 16px; border-radius:10px; font-size:12.5px; box-shadow:0 8px 22px rgba(0,0,0,.4); z-index:50; opacity:0; pointer-events:none; transition:opacity .25s; }
+  .toast.tunjuk { opacity:1; }
+
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:60; padding:20px; }
+  .overlay.tunjuk { display:flex; }
+  .modal { background:var(--kad); border:1px solid var(--garis); border-radius:14px; padding:20px; width:100%; max-width:360px; }
+  .modal h3 { margin:0 0 14px; font-size:15px; }
+  .modal .medan label { display:block; font-size:11px; color:var(--teks-malap); margin-bottom:4px; }
+  .modal-aksi { display:flex; gap:8px; margin-top:16px; }
+  .modal-aksi .btn { flex:1; text-align:center; }
+
+  @media (max-width: 800px) {
+    #kandungan { flex-direction:column; }
+    #sisi { width:auto; border-left:none; border-top:1px solid var(--garis); max-height:46vh; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a href="tetapan.html" id="btn-balik" title="Kembali ke Tetapan" aria-label="Kembali">←</a>
+    <div>
+      <h1>Editor Laluan &amp; Alat</h1>
+      <p>Klik pelan untuk letak nod, sambung laluan &amp; alat pemadam</p>
+    </div>
+  </header>
+
+  <div id="toolbar">
+    <select id="pilih-tingkat">
+      <option value="">— Pilih tingkat —</option>
+    </select>
+    <button class="btn" id="btn-tingkat-baharu">+ Tingkat Baharu</button>
+    <div class="pemisah"></div>
+    <button class="btn aktif" id="mod-nod" data-mod="nod">🔵 Nod &amp; Laluan</button>
+    <button class="btn" id="mod-alat" data-mod="alat">🧯 Alat Pemadam</button>
+    <div class="pemisah"></div>
+    <button class="btn hijau" id="btn-muat-laluan" disabled>⬇ laluan.json</button>
+    <button class="btn hijau" id="btn-muat-pemadam" disabled>⬇ pemadam.json</button>
+    <button class="btn" id="btn-muat-index">⬇ floors-index.json</button>
+  </div>
+
+  <div id="kandungan">
+    <div id="peta-bekas">
+      <div id="kosong-peta">
+        <div>Belum ada tingkat dipilih.</div>
+        <div>Pilih tingkat sedia ada di atas, atau cipta tingkat baharu dengan muat naik gambar pelan.</div>
+        <button class="btn hijau" id="btn-tingkat-baharu-2">+ Tingkat Baharu</button>
+      </div>
+      <div id="peta-viewport" style="display:none">
+        <div id="peta-wrap">
+          <img id="peta-img" alt="Pelan lantai" />
+          <canvas id="peta-canvas"></canvas>
+        </div>
+      </div>
+      <div class="kawalan-zum" id="kawalan-zum" style="display:none">
+        <button id="btn-zum-masuk" title="Zum masuk">+</button>
+        <button id="btn-zum-keluar" title="Zum keluar">−</button>
+        <button id="btn-fit" title="Papar penuh">⤢</button>
+      </div>
+    </div>
+
+    <div id="sisi">
+      <div id="panel-nod-kosong">
+        <label class="tajuk">Cara Guna — Mod Nod &amp; Laluan</label>
+        <div class="kad-info">
+          <b>Klik ruang kosong</b> = letak nod baharu.<br><br>
+          <b>Klik nod sedia ada</b> = pilih nod (boleh padam / tanda titik berkumpul / sambung ke nod lain).
+        </div>
+      </div>
+
+      <div id="panel-nod-terpilih" style="display:none">
+        <label class="tajuk">Nod #<span id="nod-id-label"></span></label>
+        <div class="medan">
+          <label style="display:block; font-size:11px; color:var(--teks-malap); margin-bottom:4px;">Jenis Nod</label>
+          <select id="pilih-jenis-nod">
+            <option value="biasa">Biasa (laluan koridor)</option>
+            <option value="tangga">🚪 Tangga / Laluan Keluar</option>
+            <option value="berkumpul">🎯 Titik Berkumpul (Assembly Point)</option>
+          </select>
+        </div>
+        <div class="medan" id="medan-label-kumpul" style="display:none">
+          <input type="text" id="input-label-kumpul" placeholder="Label (cth: 1, 2, 3...)">
+        </div>
+        <button class="btn aktif" id="btn-sambung-dari" style="width:100%; margin-bottom:8px;">🔗 Sambung Dari Nod Ini</button>
+        <label class="tajuk">Sambungan</label>
+        <div class="senarai-mini" id="senarai-sambungan"></div>
+        <button class="btn merah" id="btn-padam-nod" style="width:100%; margin-top:10px;">🗑 Padam Nod Ini</button>
+      </div>
+
+      <div id="panel-sambung-mod" style="display:none">
+        <div class="kad-info">🔗 Mod sambung aktif — klik satu lagi nod untuk cipta laluan. Klik ruang kosong untuk batal.</div>
+      </div>
+
+      <div id="panel-alat" style="display:none">
+        <label class="tajuk">Senarai Belum Ditempatkan</label>
+        <div class="senarai-mini" id="senarai-belum-tempat"></div>
+        <div class="kad-info" style="margin-top:10px;">
+          Klik satu item di atas untuk "pasang", kemudian klik lokasi sebenar pada pelan.
+          Atau klik terus ruang kosong pada pelan untuk tambah alat baharu.
+        </div>
+      </div>
+
+      <details>
+        <summary>📥 Import dari fail peta_apk (Leaflet)</summary>
+        <div class="isi">
+          Naikkan fail <b>peta_apk_*.html</b> yang ada MAP_DATA (gambar + senarai alat 3 tingkat) —
+          gambar akan disediakan untuk muat turun, dan senarai alat (tanpa kedudukan) akan masuk
+          "Senarai Belum Ditempatkan" ikut tingkat.
+          <div class="medan" style="margin-top:10px;">
+            <input type="file" id="input-import-leaflet" accept=".html,.htm">
+          </div>
+          <div id="senarai-import-gambar" style="margin-top:8px;"></div>
+        </div>
+      </details>
+
+      <details>
+        <summary>ℹ️ Legenda</summary>
+        <div class="isi">
+          <div class="legenda-baris"><span class="lc-dot" style="background:var(--oren)"></span> Nod biasa (laluan koridor)</div>
+          <div class="legenda-baris"><img src="simbol/tangga.svg" style="width:20px;height:20px;border-radius:4px;"> Tangga / Laluan Keluar</div>
+          <div class="legenda-baris"><img src="simbol/berkumpul.png" style="width:20px;height:20px;border-radius:4px;"> Titik berkumpul (Assembly Point)</div>
+          <div class="legenda-baris"><img src="simbol/pemadam.png" style="width:20px;height:20px;border-radius:4px;"> Alat pemadam api</div>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-tingkat-baharu">
+  <div class="modal">
+    <h3>Tingkat Baharu</h3>
+    <div class="medan"><label>ID Tingkat (cth: aras1, aras3)</label><input type="text" id="tb-id" placeholder="aras1"></div>
+    <div class="medan"><label>Nama Paparan (cth: Aras 1)</label><input type="text" id="tb-nama" placeholder="Aras 1"></div>
+    <div class="medan"><label>Gambar Pelan Lantai</label><input type="file" id="tb-gambar" accept="image/*"></div>
+    <div class="modal-aksi">
+      <button class="btn" id="tb-batal">Batal</button>
+      <button class="btn hijau" id="tb-cipta">Cipta</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-alat">
+  <div class="modal">
+    <h3 id="alat-tajuk">Alat Pemadam</h3>
+    <div class="medan"><label>No. Siri Aset</label><input type="text" id="al-aset"></div>
+    <div class="medan"><label>No. Siri Bomba</label><input type="text" id="al-bomba"></div>
+    <div class="medan"><label>Jenis</label><select id="al-jenis"><option>ABC</option><option>CO2</option></select></div>
+    <div class="medan"><label>Lokasi</label><input type="text" id="al-lokasi" placeholder="cth: KORIDOR"></div>
+    <div class="medan"><label>Status</label><select id="al-status"><option>AKTIF</option><option>TIDAK AKTIF</option></select></div>
+    <div class="modal-aksi">
+      <button class="btn merah" id="al-padam" style="display:none">Padam</button>
+      <button class="btn" id="al-batal">Batal</button>
+      <button class="btn hijau" id="al-simpan">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ Rujukan skema data (sama seperti floors/*.json & peta.html) ============
+  laluan.json  : { aras_zon, nod:[{id,x,y,label,jenis}], laluan:[{dari,ke}], lebar_imej, tinggi_imej }
+  pemadam.json : { lebar_imej, tinggi_imej, alat_pemadam_api:[{no_siri_aset,no_siri_bomba,jenis,lokasi,aras_zon,status,x,y}] }
+====================================================================================== */
+
+const bekas = document.getElementById('peta-bekas');
+const viewport = document.getElementById('peta-viewport');
+const imgEl = document.getElementById('peta-img');
+const canvas = document.getElementById('peta-canvas');
+const ctx = canvas.getContext('2d');
+const kosongEl = document.getElementById('kosong-peta');
+const kawalanZumEl = document.getElementById('kawalan-zum');
+const pilihTingkatEl = document.getElementById('pilih-tingkat');
+
+let FLOORS = {};      // id -> { id, nama, imej(src url), lebar, tinggi, nod, laluan, pemadam, belumTempat: [] }
+let FLOOR_AKTIF = null;
+let MODE = 'nod';      // 'nod' | 'alat'
+let sambungDari = null; // node id currently connecting from
+let nodTerpilih = null;
+let alatArmed = null;   // item from belumTempat currently armed for placement
+let alatEditIndex = null; // index being edited via modal (-1 = new)
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('tunjuk');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(() => t.classList.remove('tunjuk'), 2600);
+}
+
+/* ---------------- Muat senarai tingkat sedia ada ---------------- */
+async function muatSenaraiSediaAda() {
+  try {
+    const res = await fetch('floors/floors-index.json');
+    if (!res.ok) return;
+    const list = await res.json();
+    for (const info of list) {
+      const f = { id: info.id, nama: info.nama, imej: info.imej, lebar: 0, tinggi: 0, nod: [], laluan: [], pemadam: [], belumTempat: [] };
+      try {
+        const pem = await (await fetch(info.pemadam)).json();
+        f.pemadam = pem.alat_pemadam_api || [];
+        f.lebar = pem.lebar_imej; f.tinggi = pem.tinggi_imej;
+      } catch (e) {}
+      if (info.laluan) {
+        try {
+          const lal = await (await fetch(info.laluan)).json();
+          f.nod = lal.nod || []; f.laluan = lal.laluan || [];
+          f.lebar = f.lebar || lal.lebar_imej; f.tinggi = f.tinggi || lal.tinggi_imej;
+        } catch (e) {}
+      }
+      FLOORS[f.id] = f;
+      tambahOptionTingkat(f.id, f.nama);
+    }
+  } catch (e) { /* floors-index.json mungkin tiada — takpe, boleh cipta tingkat baharu */ }
+}
+
+function tambahOptionTingkat(id, nama) {
+  if ([...pilihTingkatEl.options].some(o => o.value === id)) return;
+  const opt = document.createElement('option');
+  opt.value = id; opt.textContent = nama + ' (' + id + ')';
+  pilihTingkatEl.appendChild(opt);
+}
+
+/* ---------------- Tukar tingkat aktif ---------------- */
+function bukaTingkat(id) {
+  const f = FLOORS[id];
+  if (!f) return;
+  FLOOR_AKTIF = f;
+  pilihTingkatEl.value = id;
+  nodTerpilih = null; sambungDari = null; alatArmed = null;
+  kemaskiniPanel();
+
+  kosongEl.style.display = 'none';
+  viewport.style.display = '';
+  kawalanZumEl.style.display = '';
+
+  imgEl.onload = () => {
+    if (!f.lebar) { f.lebar = imgEl.naturalWidth; f.tinggi = imgEl.naturalHeight; }
+    canvas.width = f.lebar; canvas.height = f.tinggi;
+    imgEl.style.width = f.lebar + 'px'; imgEl.style.height = f.tinggi + 'px';
+    suaiPapar();
+    lukis();
+  };
+  imgEl.src = f.imej;
+
+  document.getElementById('btn-muat-laluan').disabled = false;
+  document.getElementById('btn-muat-pemadam').disabled = false;
+  paparSenaraiBelumTempat();
+}
+pilihTingkatEl.addEventListener('change', () => { if (pilihTingkatEl.value) bukaTingkat(pilihTingkatEl.value); });
+
+/* ---------------- Tingkat baharu ---------------- */
+const ovTb = document.getElementById('overlay-tingkat-baharu');
+function bukaModalTingkatBaharu() { ovTb.classList.add('tunjuk'); }
+document.getElementById('btn-tingkat-baharu').addEventListener('click', bukaModalTingkatBaharu);
+document.getElementById('btn-tingkat-baharu-2').addEventListener('click', bukaModalTingkatBaharu);
+document.getElementById('tb-batal').addEventListener('click', () => ovTb.classList.remove('tunjuk'));
+document.getElementById('tb-cipta').addEventListener('click', () => {
+  const id = document.getElementById('tb-id').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  const nama = document.getElementById('tb-nama').value.trim() || id;
+  const fail = document.getElementById('tb-gambar').files[0];
+  if (!id) { toast('Sila isi ID tingkat.'); return; }
+  if (!fail) { toast('Sila muat naik gambar pelan.'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const f = { id, nama, imej: reader.result, lebar: 0, tinggi: 0, nod: [], laluan: [], pemadam: [],
+      belumTempat: FLOORS[id]?.belumTempat || [] };
+    FLOORS[id] = f;
+    tambahOptionTingkat(id, nama);
+    ovTb.classList.remove('tunjuk');
+    document.getElementById('tb-id').value = ''; document.getElementById('tb-nama').value = ''; document.getElementById('tb-gambar').value = '';
+    bukaTingkat(id);
+    toast('Tingkat "' + nama + '" dicipta.');
+  };
+  reader.readAsDataURL(fail);
+});
+
+/* ---------------- Mod (Nod / Alat) ---------------- */
+document.getElementById('mod-nod').addEventListener('click', () => tukarMod('nod'));
+document.getElementById('mod-alat').addEventListener('click', () => tukarMod('alat'));
+function tukarMod(m) {
+  MODE = m;
+  document.getElementById('mod-nod').classList.toggle('aktif', m === 'nod');
+  document.getElementById('mod-alat').classList.toggle('aktif', m === 'alat');
+  nodTerpilih = null; sambungDari = null; alatArmed = null;
+  kemaskiniPanel();
+  lukis();
+}
+
+/* ---------------- Panel sisi ---------------- */
+function kemaskiniPanel() {
+  document.getElementById('panel-nod-kosong').style.display = (MODE === 'nod' && !nodTerpilih && !sambungDari) ? '' : 'none';
+  document.getElementById('panel-nod-terpilih').style.display = (MODE === 'nod' && nodTerpilih && !sambungDari) ? '' : 'none';
+  document.getElementById('panel-sambung-mod').style.display = (MODE === 'nod' && sambungDari) ? '' : 'none';
+  document.getElementById('panel-alat').style.display = (MODE === 'alat') ? '' : 'none';
+
+  if (MODE === 'nod' && nodTerpilih) {
+    document.getElementById('nod-id-label').textContent = nodTerpilih.id;
+    document.getElementById('pilih-jenis-nod').value = nodTerpilih.jenis || 'biasa';
+    document.getElementById('medan-label-kumpul').style.display = nodTerpilih.jenis !== 'biasa' ? '' : 'none';
+    document.getElementById('input-label-kumpul').value = nodTerpilih.label || '';
+    const sambunganEl = document.getElementById('senarai-sambungan');
+    const list = FLOOR_AKTIF.laluan.filter(l => l.dari === nodTerpilih.id || l.ke === nodTerpilih.id);
+    sambunganEl.innerHTML = list.length ? list.map((l,i) => {
+      const lain = l.dari === nodTerpilih.id ? l.ke : l.dari;
+      return `<div class="baris-mini"><span class="teks">→ Nod #${lain}</span><button data-dari="${l.dari}" data-ke="${l.ke}">✕</button></div>`;
+    }).join('') : '<div class="kad-info">Tiada sambungan.</div>';
+  }
+  if (MODE === 'alat') paparSenaraiBelumTempat();
+}
+
+document.getElementById('pilih-jenis-nod').addEventListener('change', (e) => {
+  if (!nodTerpilih) return;
+  nodTerpilih.jenis = e.target.value;
+  if (e.target.value === 'biasa') nodTerpilih.label = '';
+  kemaskiniPanel(); lukis();
+});
+document.getElementById('input-label-kumpul').addEventListener('input', (e) => {
+  if (!nodTerpilih) return;
+  nodTerpilih.label = e.target.value; lukis();
+});
+document.getElementById('btn-sambung-dari').addEventListener('click', () => {
+  if (!nodTerpilih) return;
+  sambungDari = nodTerpilih.id;
+  kemaskiniPanel();
+});
+document.getElementById('btn-padam-nod').addEventListener('click', () => {
+  if (!nodTerpilih || !FLOOR_AKTIF) return;
+  FLOOR_AKTIF.nod = FLOOR_AKTIF.nod.filter(n => n.id !== nodTerpilih.id);
+  FLOOR_AKTIF.laluan = FLOOR_AKTIF.laluan.filter(l => l.dari !== nodTerpilih.id && l.ke !== nodTerpilih.id);
+  nodTerpilih = null; kemaskiniPanel(); lukis();
+});
+document.getElementById('senarai-sambungan').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-dari]');
+  if (!btn || !FLOOR_AKTIF) return;
+  const dari = Number(btn.dataset.dari), ke = Number(btn.dataset.ke);
+  FLOOR_AKTIF.laluan = FLOOR_AKTIF.laluan.filter(l => !(l.dari === dari && l.ke === ke));
+  kemaskiniPanel(); lukis();
+});
+
+/* ---------------- Ikon rasmi (sama seperti peta.html) ---------------- */
+const SUMBER_IKON = { pemadam: 'simbol/pemadam.png', tangga: 'simbol/tangga.svg', berkumpul: 'simbol/berkumpul.png' };
+const IKON = {};
+Object.keys(SUMBER_IKON).forEach(k => { const im = new Image(); im.src = SUMBER_IKON[k]; im.onload = () => lukis(); IKON[k] = im; });
+
+function lukisIkon(jenis, x, y, s) {
+  const im = IKON[jenis];
+  if (im && im.complete && im.naturalWidth) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 1;
+    ctx.drawImage(im, x - s/2, y - s/2, s, s);
+    ctx.restore();
+  }
+}
+function lukisLabelNod(x, y, s, label) {
+  if (!label) return;
+  const r = s * 0.26, lx = x + s*0.38, ly = y + s*0.38;
+  ctx.beginPath(); ctx.arc(lx, ly, r, 0, Math.PI*2);
+  ctx.fillStyle = '#111'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.font = `bold ${Math.max(9, r*1.15)}px sans-serif`; ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(label, lx, ly + 0.5);
+  ctx.textAlign = 'left';
+}
+function lukis() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!FLOOR_AKTIF) return;
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 3;
+  const nodById = {}; FLOOR_AKTIF.nod.forEach(n => nodById[n.id] = n);
+  FLOOR_AKTIF.laluan.forEach(l => {
+    const a = nodById[l.dari], b = nodById[l.ke];
+    if (a && b) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+  });
+
+  FLOOR_AKTIF.nod.forEach(n => {
+    if (n.jenis === 'tangga' || n.jenis === 'berkumpul') {
+      lukisIkon(n.jenis, n.x, n.y, 28); lukisLabelNod(n.x, n.y, 28, n.label); return;
+    }
+    ctx.beginPath(); ctx.arc(n.x, n.y, 8, 0, Math.PI*2);
+    ctx.fillStyle = (nodTerpilih && nodTerpilih.id === n.id) || sambungDari === n.id ? '#ffffff' : '#C99A2E';
+    ctx.fill();
+    ctx.strokeStyle = '#7A1913'; ctx.lineWidth = 2; ctx.stroke();
+  });
+
+  FLOOR_AKTIF.pemadam.forEach((p, i) => {
+    lukisIkon('pemadam', p.x, p.y, 24);
+  });
+
+  if (sambungDari) {
+    const n = nodById[sambungDari];
+    if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, 13, 0, Math.PI*2); ctx.strokeStyle = '#C99A2E'; ctx.lineWidth = 3; ctx.stroke(); }
+  }
+}
+
+/* ---------------- Zum & Pan (sama corak seperti peta.html) ---------------- */
+let zum = 1, ofsX = 0, ofsY = 0;
+function tetapkanTransform() { viewport.style.transform = `translate(${ofsX}px, ${ofsY}px) scale(${zum})`; }
+function suaiPapar() {
+  const rw = bekas.clientWidth, rh = bekas.clientHeight;
+  const iw = canvas.width, ih = canvas.height;
+  if (!iw || !ih) return;
+  zum = Math.min(rw / iw, rh / ih) * 0.94;
+  ofsX = (rw - iw * zum) / 2; ofsY = (rh - ih * zum) / 2;
+  tetapkanTransform();
+}
+function zumPada(faktor, cx, cy) {
+  const zumBaru = Math.min(5, Math.max(0.15, zum * faktor));
+  ofsX = cx - (cx - ofsX) * (zumBaru / zum); ofsY = cy - (cy - ofsY) * (zumBaru / zum);
+  zum = zumBaru; tetapkanTransform();
+}
+document.getElementById('btn-zum-masuk').addEventListener('click', () => zumPada(1.3, bekas.clientWidth/2, bekas.clientHeight/2));
+document.getElementById('btn-zum-keluar').addEventListener('click', () => zumPada(1/1.3, bekas.clientWidth/2, bekas.clientHeight/2));
+document.getElementById('btn-fit').addEventListener('click', suaiPapar);
+window.addEventListener('resize', suaiPapar);
+bekas.addEventListener('wheel', (e) => {
+  if (!FLOOR_AKTIF) return;
+  e.preventDefault();
+  const rect = bekas.getBoundingClientRect();
+  zumPada(e.deltaY < 0 ? 1.12 : 1/1.12, e.clientX - rect.left, e.clientY - rect.top);
+}, { passive:false });
+
+let penunjuk = new Map(); let seretAktif = false, seretMula = {x:0,y:0}, ofsMula = {x:0,y:0};
+let gerakSejakTurun = 0;
+bekas.addEventListener('pointerdown', (e) => {
+  if (!FLOOR_AKTIF) return;
+  bekas.setPointerCapture(e.pointerId);
+  penunjuk.set(e.pointerId, { x:e.clientX, y:e.clientY });
+  gerakSejakTurun = 0;
+  if (penunjuk.size === 1) { seretAktif = true; seretMula = { x:e.clientX, y:e.clientY }; ofsMula = { x:ofsX, y:ofsY }; }
+});
+bekas.addEventListener('pointermove', (e) => {
+  if (!penunjuk.has(e.pointerId)) return;
+  penunjuk.set(e.pointerId, { x:e.clientX, y:e.clientY });
+  gerakSejakTurun++;
+  if (penunjuk.size === 1 && seretAktif) {
+    ofsX = ofsMula.x + (e.clientX - seretMula.x); ofsY = ofsMula.y + (e.clientY - seretMula.y);
+    tetapkanTransform();
+  }
+});
+function lepasPenunjuk(e) { penunjuk.delete(e.pointerId); if (penunjuk.size === 0) seretAktif = false; }
+bekas.addEventListener('pointerup', lepasPenunjuk);
+bekas.addEventListener('pointercancel', lepasPenunjuk);
+bekas.addEventListener('pointerleave', lepasPenunjuk);
+
+/* ---------------- Klik pada kanvas (letak / pilih) ---------------- */
+let nextNodeId = 1;
+bekas.addEventListener('click', (e) => {
+  if (!FLOOR_AKTIF || gerakSejakTurun > 4) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = Math.round((e.clientX - rect.left) / rect.width * canvas.width);
+  const y = Math.round((e.clientY - rect.top) / rect.height * canvas.height);
+  if (x < 0 || y < 0 || x > canvas.width || y > canvas.height) return; /* klik luar pelan */
+
+  if (MODE === 'nod') {
+    const nodDekat = FLOOR_AKTIF.nod.find(n => Math.hypot(n.x-x, n.y-y) <= 14);
+    if (sambungDari) {
+      if (nodDekat && nodDekat.id !== sambungDari) {
+        const wujud = FLOOR_AKTIF.laluan.some(l => (l.dari===sambungDari&&l.ke===nodDekat.id)||(l.dari===nodDekat.id&&l.ke===sambungDari));
+        if (!wujud) FLOOR_AKTIF.laluan.push({ dari: sambungDari, ke: nodDekat.id });
+      }
+      sambungDari = null; kemaskiniPanel(); lukis(); return;
+    }
+    if (nodDekat) {
+      nodTerpilih = nodDekat; kemaskiniPanel(); lukis(); return;
+    }
+    const idBaharu = (FLOOR_AKTIF.nod.reduce((m,n) => Math.max(m,n.id), 0)) + 1;
+    const nodBaharu = { id: idBaharu, x, y, label: '', jenis: 'biasa' };
+    FLOOR_AKTIF.nod.push(nodBaharu);
+    nodTerpilih = nodBaharu; kemaskiniPanel(); lukis();
+  }
+
+  if (MODE === 'alat') {
+    const idxDekat = FLOOR_AKTIF.pemadam.findIndex(p => Math.hypot(p.x-x, p.y-y) <= 14);
+    if (idxDekat !== -1) { bukaModalAlat(idxDekat); return; }
+    if (alatArmed) {
+      const item = alatArmed;
+      FLOOR_AKTIF.pemadam.push({ ...item, aras_zon: FLOOR_AKTIF.nama.toUpperCase(), status: 'AKTIF', x, y });
+      FLOOR_AKTIF.belumTempat = FLOOR_AKTIF.belumTempat.filter(it => it !== item);
+      alatArmed = null; paparSenaraiBelumTempat(); lukis();
+      toast('Alat "'+ (item.lokasi||'') +'" ditempatkan.');
+      return;
+    }
+    bukaModalAlat(-1, { x, y });
+  }
+});
+
+/* ---------------- Senarai belum ditempatkan ---------------- */
+function paparSenaraiBelumTempat() {
+  const el = document.getElementById('senarai-belum-tempat');
+  if (!FLOOR_AKTIF) { el.innerHTML = ''; return; }
+  const list = FLOOR_AKTIF.belumTempat;
+  el.innerHTML = list.length ? list.map((it, i) =>
+    `<div class="baris-mini ${alatArmed===it?'armed':''}" data-i="${i}">
+       <span class="teks">${it.lokasi || '(tiada lokasi)'} — ${it.no_siri_aset || ''}</span>
+       <button data-buang="${i}" title="Buang dari senarai">✕</button>
+     </div>`).join('')
+    : '<div class="kad-info">Tiada item belum ditempatkan untuk tingkat ini.</div>';
+}
+document.getElementById('senarai-belum-tempat').addEventListener('click', (e) => {
+  const buang = e.target.closest('button[data-buang]');
+  if (buang) { FLOOR_AKTIF.belumTempat.splice(Number(buang.dataset.buang), 1); paparSenaraiBelumTempat(); return; }
+  const baris = e.target.closest('.baris-mini[data-i]');
+  if (baris) { alatArmed = FLOOR_AKTIF.belumTempat[Number(baris.dataset.i)]; paparSenaraiBelumTempat(); toast('Klik lokasi pada pelan untuk tempatkan.'); }
+});
+
+/* ---------------- Modal Alat Pemadam ---------------- */
+const ovAlat = document.getElementById('overlay-alat');
+let alatPosBaharu = null;
+function bukaModalAlat(index, posBaharu) {
+  alatEditIndex = index; alatPosBaharu = posBaharu || null;
+  const item = index >= 0 ? FLOOR_AKTIF.pemadam[index] : { no_siri_aset:'', no_siri_bomba:'', jenis:'ABC', lokasi:'', status:'AKTIF' };
+  document.getElementById('alat-tajuk').textContent = index >= 0 ? 'Edit Alat Pemadam' : 'Alat Pemadam Baharu';
+  document.getElementById('al-aset').value = item.no_siri_aset || '';
+  document.getElementById('al-bomba').value = item.no_siri_bomba || '';
+  document.getElementById('al-jenis').value = item.jenis || 'ABC';
+  document.getElementById('al-lokasi').value = item.lokasi || '';
+  document.getElementById('al-status').value = item.status || 'AKTIF';
+  document.getElementById('al-padam').style.display = index >= 0 ? '' : 'none';
+  ovAlat.classList.add('tunjuk');
+}
+document.getElementById('al-batal').addEventListener('click', () => ovAlat.classList.remove('tunjuk'));
+document.getElementById('al-simpan').addEventListener('click', () => {
+  const data = {
+    no_siri_aset: document.getElementById('al-aset').value.trim(),
+    no_siri_bomba: document.getElementById('al-bomba').value.trim(),
+    jenis: document.getElementById('al-jenis').value,
+    lokasi: document.getElementById('al-lokasi').value.trim(),
+    aras_zon: FLOOR_AKTIF.nama.toUpperCase(),
+    status: document.getElementById('al-status').value,
+  };
+  if (alatEditIndex >= 0) {
+    Object.assign(FLOOR_AKTIF.pemadam[alatEditIndex], data);
+  } else {
+    FLOOR_AKTIF.pemadam.push({ ...data, x: alatPosBaharu.x, y: alatPosBaharu.y });
+  }
+  ovAlat.classList.remove('tunjuk'); lukis();
+});
+document.getElementById('al-padam').addEventListener('click', () => {
+  if (alatEditIndex >= 0) FLOOR_AKTIF.pemadam.splice(alatEditIndex, 1);
+  ovAlat.classList.remove('tunjuk'); lukis();
+});
+
+/* ---------------- Export ---------------- */
+function muatTurun(nama, isiTeks) {
+  const blob = new Blob([isiTeks], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = nama;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+document.getElementById('btn-muat-laluan').addEventListener('click', () => {
+  if (!FLOOR_AKTIF) return;
+  const data = { aras_zon: FLOOR_AKTIF.nama.toUpperCase(), nod: FLOOR_AKTIF.nod, laluan: FLOOR_AKTIF.laluan,
+    lebar_imej: canvas.width, tinggi_imej: canvas.height };
+  muatTurun(FLOOR_AKTIF.id + '_laluan.json', JSON.stringify(data, null, 2));
+  toast('Dimuat turun: ' + FLOOR_AKTIF.id + '_laluan.json');
+});
+document.getElementById('btn-muat-pemadam').addEventListener('click', () => {
+  if (!FLOOR_AKTIF) return;
+  const data = { lebar_imej: canvas.width, tinggi_imej: canvas.height, alat_pemadam_api: FLOOR_AKTIF.pemadam };
+  muatTurun(FLOOR_AKTIF.id + '_pemadam.json', JSON.stringify(data, null, 2));
+  toast('Dimuat turun: ' + FLOOR_AKTIF.id + '_pemadam.json');
+});
+document.getElementById('btn-muat-index').addEventListener('click', () => {
+  const list = Object.values(FLOORS).map(f => ({
+    id: f.id, nama: f.nama, imej: 'floors/' + f.id + '.png',
+    laluan: 'floors/' + f.id + '_laluan.json', pemadam: 'floors/' + f.id + '_pemadam.json'
+  }));
+  if (!list.length) { toast('Tiada tingkat untuk disenaraikan.'); return; }
+  muatTurun('floors-index.json', JSON.stringify(list, null, 2));
+  toast('Dimuat turun: floors-index.json — semak semula nama fail gambar sebelum letak dalam folder floors/.');
+});
+
+/* ---------------- Import dari fail peta_apk (Leaflet) ---------------- */
+document.getElementById('input-import-leaflet').addEventListener('change', async (e) => {
+  const fail = e.target.files[0];
+  if (!fail) return;
+  toast('Membaca fail...');
+  const teks = await fail.text();
+  const penanda = 'const MAP_DATA = ';
+  const idx = teks.indexOf(penanda);
+  if (idx === -1) { toast('MAP_DATA tidak dijumpai dalam fail ini.'); return; }
+  let sisa = teks.slice(idx + penanda.length);
+  let hujung = sisa.indexOf('\n');
+  let jsonStr = (hujung === -1 ? sisa : sisa.slice(0, hujung)).trim();
+  if (jsonStr.endsWith(';')) jsonStr = jsonStr.slice(0, -1);
+  let mapData;
+  try { mapData = JSON.parse(jsonStr); } catch (err) { toast('Gagal baca MAP_DATA — format tidak dikenali.'); return; }
+
+  // 1) Sediakan senarai belum-ditempatkan ikut tingkat
+  for (const floorId of Object.keys(mapData.points || {})) {
+    const items = mapData.points[floorId].map(p => ({
+      no_siri_aset: p.no_siri_aset || '', no_siri_bomba: p.no_siri_bomba || '',
+      jenis: p.jenis || 'ABC', lokasi: p.lokasi ? p.lokasi.toUpperCase() : ''
+    }));
+    if (FLOORS[floorId]) FLOORS[floorId].belumTempat = items;
+    else FLOORS[floorId] = { id: floorId, nama: floorId, imej: null, lebar:0, tinggi:0, nod:[], laluan:[], pemadam:[], belumTempat: items };
+  }
+  if (FLOOR_AKTIF) paparSenaraiBelumTempat();
+
+  // 2) Sediakan pautan muat turun gambar (diskalakan ke lebar maks 1600px)
+  const senaraiGambarEl = document.getElementById('senarai-import-gambar');
+  senaraiGambarEl.innerHTML = 'Menyediakan gambar...';
+  const pautan = [];
+  for (const floorId of Object.keys(mapData.images || {})) {
+    const b64 = mapData.images[floorId];
+    const gambarKecil = await skalakanImejB64(b64, 1600);
+    pautan.push({ floorId, dataUrl: gambarKecil });
+  }
+  senaraiGambarEl.innerHTML = pautan.map(p =>
+    `<div class="baris-mini"><span class="teks">${p.floorId}.png</span></div>`
+  ).join('');
+  pautan.forEach(p => {
+    const div = [...senaraiGambarEl.children].find(d => d.textContent.includes(p.floorId));
+    const btn = document.createElement('a');
+    btn.href = p.dataUrl; btn.download = p.floorId + '.png'; btn.className = 'btn'; btn.textContent = '⬇';
+    btn.style.marginLeft = '6px';
+    div.appendChild(btn);
+  });
+  toast('Import selesai — muat turun gambar di bawah, lalu cipta Tingkat Baharu guna gambar tersebut.');
+});
+
+function skalakanImejB64(b64, lebarMaks) {
+  return new Promise((resolve) => {
+    const im = new Image();
+    im.onload = () => {
+      const skala = Math.min(1, lebarMaks / im.naturalWidth);
+      const w = Math.round(im.naturalWidth * skala), h = Math.round(im.naturalHeight * skala);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(im, 0, 0, w, h);
+      resolve(c.toDataURL('image/png'));
+    };
+    im.src = 'data:image/png;base64,' + b64;
+  });
+}
+
+/* ---------------- Mula ---------------- */
+muatSenaraiSediaAda();
+</script>
+</body>
+</html>

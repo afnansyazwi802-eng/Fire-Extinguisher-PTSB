@@ -1,0 +1,46 @@
+{
+  "lebar_imej": 1800,
+  "tinggi_imej": 519,
+  "alat_pemadam_api": [
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/83",
+      "no_siri_bomba": "SR032025Y086174",
+      "jenis": "ABC",
+      "lokasi": "BILIK HOSE REEL",
+      "aras_zon": "BENGKEL K3",
+      "status": "AKTIF",
+      "x": 1071.6,
+      "y": 48.0
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/84",
+      "no_siri_bomba": "SR032025Y086189",
+      "jenis": "ABC",
+      "lokasi": "BENGKEL BATA",
+      "aras_zon": "BENGKEL K3",
+      "status": "AKTIF",
+      "x": 1334.2,
+      "y": 443.0
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/94",
+      "no_siri_bomba": "SR032025Y086025",
+      "jenis": "ABC",
+      "lokasi": "BILIK HOSE REEL",
+      "aras_zon": "BENGKEL K3",
+      "status": "AKTIF",
+      "x": 451.9,
+      "y": 456.4
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/99",
+      "no_siri_bomba": "SR032025Y086198",
+      "jenis": "ABC",
+      "lokasi": "BILIK HOSE REEL",
+      "aras_zon": "BENGKEL K3",
+      "status": "AKTIF",
+      "x": 1494.4,
+      "y": 454.6
+    }
+  ]
+}

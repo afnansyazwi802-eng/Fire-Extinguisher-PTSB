@@ -1,0 +1,56 @@
+{
+  "lebar_imej": 1800,
+  "tinggi_imej": 1358,
+  "alat_pemadam_api": [
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/95",
+      "no_siri_bomba": "SR022025Y039270",
+      "jenis": "ABC",
+      "lokasi": "BENGKEL KAYU",
+      "aras_zon": "BENGKEL K4",
+      "status": "AKTIF",
+      "x": 496.7,
+      "y": 1191.0
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/96",
+      "no_siri_bomba": "SR022025Y041325",
+      "jenis": "ABC",
+      "lokasi": "BENGKEL KAYU",
+      "aras_zon": "BENGKEL K4",
+      "status": "AKTIF",
+      "x": 665.2,
+      "y": 1191.3
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/97",
+      "no_siri_bomba": "SR032025Y086036",
+      "jenis": "ABC",
+      "lokasi": "BILIK HOUSE REEL",
+      "aras_zon": "BENGKEL K4",
+      "status": "AKTIF",
+      "x": 691.5,
+      "y": 1222.3
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/98",
+      "no_siri_bomba": "SR022025Y042106",
+      "jenis": "ABC",
+      "lokasi": "MAKMAL GEOMATIK",
+      "aras_zon": "BENGKEL K4",
+      "status": "AKTIF",
+      "x": 428.9,
+      "y": 1191.5
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/21/71",
+      "no_siri_bomba": "UF032021Z213487",
+      "jenis": "ABC",
+      "lokasi": "MAKMAL GEOMATIK",
+      "aras_zon": "BENGKEL K4",
+      "status": "AKTIF",
+      "x": 247.9,
+      "y": 1190.8
+    }
+  ]
+}

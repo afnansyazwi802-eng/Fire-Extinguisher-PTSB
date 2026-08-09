@@ -1,0 +1,26 @@
+{
+  "lebar_imej": 1800,
+  "tinggi_imej": 673,
+  "alat_pemadam_api": [
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/91",
+      "no_siri_bomba": "SR022025Y042382",
+      "jenis": "ABC",
+      "lokasi": "BILIK HOSE REEL",
+      "aras_zon": "BENGKEL K1",
+      "status": "AKTIF",
+      "x": 955.9,
+      "y": 611.1
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/54",
+      "no_siri_bomba": "SR032025Z011871",
+      "jenis": "CO2",
+      "lokasi": "MAKMAL. KOMPUTER UKUR",
+      "aras_zon": "BENGKEL K1",
+      "status": "AKTIF",
+      "x": 946.2,
+      "y": 588.9
+    }
+  ]
+}

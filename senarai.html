@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Extinguisher List — Fire Extinguisher Locator</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#7A1913" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root { --merah:#B3261E; --merah-terang:#D4291F; --merah-gelap:#7A1913; --emas:#C99A2E; --emas-terang:#E5BE5E;
+    --gelap:#1B1B1B; --malap:#7A7A7A; --garis:#EFEAE6; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:#fff; color:var(--gelap); font-family:-apple-system,"Segoe UI",Roboto,sans-serif; }
+  a { text-decoration:none; color:inherit; }
+  #app { max-width:480px; margin:0 auto; min-height:100%; padding-bottom:calc(70px + env(safe-area-inset-bottom)); }
+  header { background:linear-gradient(160deg, var(--merah-terang), var(--merah-gelap)); padding:16px 18px 20px;
+    display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:10; }
+  header a.balik { flex:none; width:34px; height:34px; border-radius:10px; background:rgba(0,0,0,.18);
+    color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  header h1 { color:#fff; font-size:16px; margin:0; font-weight:800; letter-spacing:.3px; }
+  header p { color:rgba(255,255,255,.8); font-size:11.5px; margin:2px 0 0; }
+  #cari-kotak { padding:14px 18px 4px; }
+  #cari-kotak input { width:100%; border:1px solid var(--garis); background:#F8F6F4; border-radius:12px;
+    padding:11px 14px; font-size:13.5px; color:var(--gelap); }
+  #cari-kotak input:focus { outline:2px solid var(--emas-terang); }
+
+  #blok-luar { margin:14px 18px 20px; border:1px solid var(--garis); border-radius:16px; overflow:hidden;
+    box-shadow:0 3px 12px rgba(20,20,20,.06); }
+  #blok-luar-header { display:flex; align-items:center; gap:12px; padding:14px 16px;
+    background:linear-gradient(150deg, var(--merah-terang), var(--merah-gelap)); }
+  #blok-luar-header .ikon { flex:none; width:38px; height:38px; border-radius:10px; background:rgba(255,255,255,.18);
+    display:flex; align-items:center; justify-content:center; font-size:18px; }
+  #blok-luar-header b { display:block; color:#fff; font-size:14px; font-weight:800; letter-spacing:.3px; }
+  #blok-luar-header small { display:block; color:var(--emas-terang); font-size:10px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; margin-top:1px; }
+  #senarai { padding:10px 12px 12px; background:#fcfbfa; }
+  .kump { margin-top:10px; border:1px solid var(--garis); border-radius:14px; overflow:hidden; background:#fff; }
+  .kump:first-child { margin-top:0; }
+  .kump-header { width:100%; display:flex; align-items:center; gap:10px; padding:14px 15px; background:#F8F6F4;
+    border:none; cursor:pointer; text-align:left; font-family:inherit; }
+  .kump-header .kump-nama { font-size:13px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--gelap); }
+  .kump-header .kump-count { margin-left:auto; font-size:11px; font-weight:700; color:var(--malap); background:#fff;
+    border:1px solid var(--garis); border-radius:20px; padding:3px 9px; }
+  .kump-header .kump-panah { flex:none; font-size:11px; color:var(--merah); transition:transform .2s; }
+  .kump.buka .kump-header .kump-panah { transform:rotate(180deg); }
+  .kump-senarai { max-height:0; overflow:hidden; transition:max-height .25s ease; }
+  .kump.buka .kump-senarai { max-height:2000px; }
+  .kump-senarai-dalam { padding:10px 12px 12px; }
+  .item { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--garis);
+    border-radius:13px; padding:12px 13px; margin-bottom:9px; box-shadow:0 2px 6px rgba(20,20,20,.04); }
+  .item:last-child { margin-bottom:0; }
+  .item:active { background:#F8F6F4; }
+  .item .dot { flex:none; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:10.5px; font-weight:800; }
+  .item .maklumat { flex:1; min-width:0; }
+  .item .maklumat b { display:block; font-size:13.5px; font-weight:700; }
+  .item .maklumat small { display:block; font-size:11px; color:var(--malap); margin-top:2px; }
+  .item .panah-item { flex:none; color:#c9c2bc; font-size:14px; }
+  .status { flex:none; font-size:10px; font-weight:800; letter-spacing:.3px; padding:4px 8px; border-radius:20px;
+    background:rgba(30,123,69,.12); color:#1E7B45; text-transform:uppercase; }
+  #kosong { text-align:center; color:var(--malap); font-size:13px; padding:40px 20px; }
+  #nav-bawah { position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; display:flex;
+    background:linear-gradient(180deg, var(--merah-terang), var(--merah-gelap));
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom)); box-shadow:0 -4px 14px rgba(0,0,0,.18); z-index:20; }
+  #nav-bawah a { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px;
+    color:rgba(255,255,255,.65); font-size:10.5px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; position:relative; }
+  #nav-bawah a.aktif { color:var(--emas-terang); }
+  #nav-bawah a.aktif::before { content:""; position:absolute; top:-8px; width:24px; height:3px; border-radius:3px; background:var(--emas-terang); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a href="index.html" class="balik" aria-label="Kembali">←</a>
+    <div>
+      <h1>Extinguisher List</h1>
+      <p>Senarai penuh alat pemadam api mengikut tingkat</p>
+    </div>
+  </header>
+
+  <div id="cari-kotak">
+    <input id="input-cari" type="text" placeholder="Cari lokasi, no. siri aset..." />
+  </div>
+
+  <div id="blok-luar">
+    <div id="blok-luar-header">
+      <span class="ikon">🏢</span>
+      <div><b>JKA</b><small>Blok K</small></div>
+    </div>
+    <div id="senarai">Memuatkan...</div>
+  </div>
+
+  <nav id="nav-bawah">
+    <a href="index.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+    <a href="blok.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.58 7-13a7 7 0 1 0-14 0c0 5.42 7 13 7 13Z"/><circle cx="12" cy="9" r="2.4"/></svg>Map</a>
+    <a href="panduan.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3.4v5.7c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6.4Z"/><path d="M8.7 12.2l2.3 2.3 4.4-4.7"/></svg>Guide</a>
+    <a href="tetapan.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Settings</a>
+  </nav>
+</div>
+
+<script>
+let SEMUA = [];
+
+async function muatJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('gagal muat ' + url);
+  return res.json();
+}
+
+async function mula() {
+  const senaraiEl = document.getElementById('senarai');
+  try {
+    const tingkatList = await muatJSON('floors/floors-index.json');
+    for (const t of tingkatList) {
+      const data = await muatJSON(t.pemadam);
+      data.alat_pemadam_api.forEach(p => SEMUA.push({ ...p, tingkat: t.nama, tingkatId: t.id }));
+    }
+  } catch (e) {
+    senaraiEl.innerHTML = '<div id="kosong">Ralat memuatkan data alat pemadam api.</div>';
+    return;
+  }
+  paparkan(SEMUA, false);
+}
+
+function paparkan(list, modeCari) {
+  const senaraiEl = document.getElementById('senarai');
+  if (!list.length) { senaraiEl.innerHTML = '<div id="kosong">Tiada hasil dijumpai.</div>'; return; }
+
+  const kumpulan = {};
+  const idKumpulan = {};
+  list.forEach(p => { (kumpulan[p.tingkat] = kumpulan[p.tingkat] || []).push(p); idKumpulan[p.tingkat] = p.tingkatId; });
+
+  let html = '';
+  Object.keys(kumpulan).forEach(tingkat => {
+    const bukaAwal = modeCari ? 'buka' : '';
+    html += `<div class="kump ${bukaAwal}">
+      <button class="kump-header" type="button">
+        <span class="kump-nama">${tingkat}</span>
+        <span class="kump-count">${kumpulan[tingkat].length} unit</span>
+        <span class="kump-panah">▼</span>
+      </button>
+      <div class="kump-senarai"><div class="kump-senarai-dalam">`;
+    kumpulan[tingkat].forEach(p => {
+      const warna = p.jenis === 'CO2' ? '#2E6FC9' : '#C99A2E';
+      html += `
+        <a class="item" href="peta.html?tingkat=${idKumpulan[tingkat]}&aset=${encodeURIComponent(p.no_siri_aset)}">
+          <div class="dot" style="background:${warna}">${p.jenis}</div>
+          <div class="maklumat">
+            <b>${p.lokasi}</b>
+            <small>${p.no_siri_aset}</small>
+          </div>
+          <span class="status">${p.status}</span>
+          <span class="panah-item">›</span>
+        </a>`;
+    });
+    html += `</div></div></div>`;
+  });
+  senaraiEl.innerHTML = html;
+
+  senaraiEl.querySelectorAll('.kump-header').forEach(btn => {
+    btn.addEventListener('click', () => btn.closest('.kump').classList.toggle('buka'));
+  });
+}
+
+document.getElementById('input-cari').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  if (!q) { paparkan(SEMUA, false); return; }
+  paparkan(SEMUA.filter(p =>
+    p.lokasi.toLowerCase().includes(q) ||
+    p.no_siri_aset.toLowerCase().includes(q) ||
+    p.jenis.toLowerCase().includes(q) ||
+    p.tingkat.toLowerCase().includes(q)
+  ), true);
+});
+
+mula();
+</script>
+</body>
+</html>

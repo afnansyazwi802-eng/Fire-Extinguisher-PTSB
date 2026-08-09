@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Safety Guide — Fire Extinguisher Locator</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#7A1913" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root { --merah:#B3261E; --merah-terang:#D4291F; --merah-gelap:#7A1913; --emas:#C99A2E; --emas-terang:#E5BE5E;
+    --gelap:#1B1B1B; --malap:#7A7A7A; --garis:#EFEAE6; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:#fff; color:var(--gelap); font-family:-apple-system,"Segoe UI",Roboto,sans-serif; }
+  a { text-decoration:none; color:inherit; }
+  #app { max-width:480px; margin:0 auto; min-height:100%; padding-bottom:calc(70px + env(safe-area-inset-bottom)); }
+  header { background:linear-gradient(160deg, var(--merah-terang), var(--merah-gelap)); padding:16px 18px 20px;
+    display:flex; align-items:center; gap:12px; }
+  header a.balik { flex:none; width:34px; height:34px; border-radius:10px; background:rgba(0,0,0,.18);
+    color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  header h1 { color:#fff; font-size:16px; margin:0; font-weight:800; letter-spacing:.3px; }
+  header p { color:rgba(255,255,255,.8); font-size:11.5px; margin:2px 0 0; }
+  main { padding:20px 18px 10px; }
+  .seksyen { margin-bottom:24px; }
+  .seksyen h2 { font-size:13px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:var(--merah);
+    margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+  .kad { background:#F8F6F4; border:1px solid var(--garis); border-radius:14px; padding:14px 16px; }
+  .langkah { display:flex; gap:12px; margin-bottom:14px; }
+  .langkah:last-child { margin-bottom:0; }
+  .langkah .no { flex:none; width:28px; height:28px; border-radius:50%; background:var(--merah); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; }
+  .langkah .teks b { display:block; font-size:13.5px; margin-bottom:2px; }
+  .langkah .teks p { margin:0; font-size:12.5px; color:var(--malap); line-height:1.5; }
+  ul.senarai-mudah { margin:0; padding-left:18px; }
+  ul.senarai-mudah li { font-size:13px; color:#3a3a3a; line-height:1.7; }
+  #kecemasan { display:flex; align-items:center; gap:14px; background:#FBE9E7; border:1px solid #F6D3CF;
+    border-radius:14px; padding:16px; }
+  #kecemasan .no-besar { font-size:30px; font-weight:900; color:var(--merah); line-height:1; }
+  #kecemasan .label { font-size:11.5px; color:var(--malap); font-weight:700; letter-spacing:.4px; text-transform:uppercase; }
+  #nav-bawah { position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; display:flex;
+    background:linear-gradient(180deg, var(--merah-terang), var(--merah-gelap));
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom)); box-shadow:0 -4px 14px rgba(0,0,0,.18); z-index:20; }
+  #nav-bawah a { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px;
+    color:rgba(255,255,255,.65); font-size:10.5px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; position:relative; }
+  #nav-bawah a.aktif { color:var(--emas-terang); }
+  #nav-bawah a.aktif::before { content:""; position:absolute; top:-8px; width:24px; height:3px; border-radius:3px; background:var(--emas-terang); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a href="index.html" class="balik" aria-label="Kembali">←</a>
+    <div>
+      <h1>Safety Guide</h1>
+      <p>Panduan keselamatan kebakaran</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="seksyen">
+      <h2>🧯 Teknik PASS — Cara Guna Alat Pemadam Api</h2>
+      <div class="kad">
+        <div class="langkah">
+          <span class="no">1</span>
+          <div class="teks"><b>Pull (Tarik)</b><p>Tarik pin keselamatan pada pemegang.</p></div>
+        </div>
+        <div class="langkah">
+          <span class="no">2</span>
+          <div class="teks"><b>Aim (Halakan)</b><p>Halakan muncung ke pangkal api, bukan ke asap.</p></div>
+        </div>
+        <div class="langkah">
+          <span class="no">3</span>
+          <div class="teks"><b>Squeeze (Tekan)</b><p>Tekan pemegang secara perlahan dan tetap.</p></div>
+        </div>
+        <div class="langkah">
+          <span class="no">4</span>
+          <div class="teks"><b>Sweep (Sapukan)</b><p>Sapukan dari sisi ke sisi sehingga api padam.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="seksyen">
+      <h2>🚪 Semasa Kebakaran</h2>
+      <div class="kad">
+        <ul class="senarai-mudah">
+          <li>Tetap tenang — jangan panik atau berlari.</li>
+          <li>Aktifkan penggera kebakaran terdekat.</li>
+          <li>Guna alat pemadam api hanya jika api masih kecil dan terkawal.</li>
+          <li>Jika api membesar, tinggalkan segera melalui laluan kecemasan terdekat.</li>
+          <li>Jangan sekali-kali guna lif semasa kebakaran.</li>
+          <li>Berkumpul di titik kumpul (assembly point) yang ditetapkan.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="seksyen">
+      <h2>☎️ Nombor Kecemasan</h2>
+      <div id="kecemasan">
+        <div>
+          <div class="no-besar">999</div>
+          <div class="label">Bomba &amp; Penyelamat</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav id="nav-bawah">
+    <a href="index.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+    <a href="blok.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.58 7-13a7 7 0 1 0-14 0c0 5.42 7 13 7 13Z"/><circle cx="12" cy="9" r="2.4"/></svg>Map</a>
+    <a href="panduan.html" class="aktif"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3.4v5.7c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6.4Z"/><path d="M8.7 12.2l2.3 2.3 4.4-4.7"/></svg>Guide</a>
+    <a href="tetapan.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

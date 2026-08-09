@@ -1,0 +1,106 @@
+{
+  "lebar_imej": 1194,
+  "tinggi_imej": 794,
+  "alat_pemadam_api": [
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/69",
+      "no_siri_bomba": "SR022025Y041395",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 2",
+      "status": "AKTIF",
+      "x": 524,
+      "y": 357
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/63",
+      "no_siri_bomba": "SR032025Y086168",
+      "jenis": "ABC",
+      "lokasi": "BILIK HOSE REEL",
+      "aras_zon": "ARAS 2",
+      "status": "AKTIF",
+      "x": 461,
+      "y": 559
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/64",
+      "no_siri_bomba": "SR022025Y042261",
+      "jenis": "ABC",
+      "lokasi": "BILIK PENSYARAH",
+      "aras_zon": "ARAS 2",
+      "status": "AKTIF",
+      "x": 570,
+      "y": 554
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/65",
+      "no_siri_bomba": "SR032025Y093244",
+      "jenis": "ABC",
+      "lokasi": "BILIK PENSYARAH",
+      "aras_zon": "ARAS 2",
+      "status": "AKTIF",
+      "x": 779,
+      "y": 554
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/70",
+      "no_siri_bomba": "SR022025Y041534",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 2",
+      "status": "AKTIF",
+      "x": 912,
+      "y": 357
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/66",
+      "no_siri_bomba": "SR022025Y041514",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 2",
+      "status": "AKTIF",
+      "x": 999,
+      "y": 181
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/68",
+      "no_siri_bomba": "SR022025Y042228",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 2",
+      "status": "AKTIF",
+      "x": 761,
+      "y": 181
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/67",
+      "no_siri_bomba": "SR022025Y042075",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 2",
+      "status": "AKTIF",
+      "x": 407,
+      "y": 154
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/62",
+      "no_siri_bomba": "SR022025Y042080",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 2",
+      "status": "AKTIF",
+      "x": 683,
+      "y": 546
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/61",
+      "no_siri_bomba": "SR032025Y093170",
+      "jenis": "ABC",
+      "lokasi": "BILIK HOSE REEL",
+      "aras_zon": "ARAS 2",
+      "status": "AKTIF",
+      "x": 846,
+      "y": 555
+    }
+  ]
+}

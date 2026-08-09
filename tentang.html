@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>About App — Fire Extinguisher Locator</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#7A1913" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root { --merah:#B3261E; --merah-terang:#D4291F; --merah-gelap:#7A1913; --emas:#C99A2E; --emas-terang:#E5BE5E;
+    --gelap:#1B1B1B; --malap:#7A7A7A; --garis:#EFEAE6; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:#fff; color:var(--gelap); font-family:-apple-system,"Segoe UI",Roboto,sans-serif; }
+  a { text-decoration:none; color:inherit; }
+  #app { max-width:480px; margin:0 auto; min-height:100%; padding-bottom:calc(70px + env(safe-area-inset-bottom)); }
+  header { background:linear-gradient(160deg, var(--merah-terang), var(--merah-gelap)); padding:16px 18px 20px;
+    display:flex; align-items:center; gap:12px; }
+  header a.balik { flex:none; width:34px; height:34px; border-radius:10px; background:rgba(0,0,0,.18);
+    color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  header h1 { color:#fff; font-size:16px; margin:0; font-weight:800; letter-spacing:.3px; }
+  main { padding:28px 22px 10px; text-align:center; }
+  .lencana { width:70px; height:70px; margin:0 auto 14px; }
+  main h2 { font-size:18px; margin:0 0 2px; font-weight:800; }
+  main .versi { font-size:12px; color:var(--malap); margin-bottom:22px; }
+  .kad { background:#F8F6F4; border:1px solid var(--garis); border-radius:14px; padding:16px; text-align:left;
+    font-size:13px; color:#3a3a3a; line-height:1.7; margin-bottom:16px; }
+  .kump-tajuk { font-size:11.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--malap); }
+  .baris-info { display:flex; justify-content:space-between; font-size:12.5px; padding:9px 0; border-bottom:1px solid var(--garis); }
+  .baris-info:last-child { border-bottom:none; }
+  .baris-info span:first-child { color:var(--malap); }
+  .baris-info span:last-child { font-weight:700; }
+  #nav-bawah { position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; display:flex;
+    background:linear-gradient(180deg, var(--merah-terang), var(--merah-gelap));
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom)); box-shadow:0 -4px 14px rgba(0,0,0,.18); z-index:20; }
+  #nav-bawah a { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px;
+    color:rgba(255,255,255,.65); font-size:10.5px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; position:relative; }
+  #nav-bawah a.aktif { color:var(--emas-terang); }
+  #nav-bawah a.aktif::before { content:""; position:absolute; top:-8px; width:24px; height:3px; border-radius:3px; background:var(--emas-terang); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a href="index.html" class="balik" aria-label="Kembali">←</a>
+    <h1>About App</h1>
+  </header>
+
+  <main>
+    <svg class="lencana" viewBox="0 0 100 118" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 3 L92 17 V52 C92 82 74 102 50 115 C26 102 8 82 8 52 V17 Z" fill="none" stroke="#B3261E" stroke-width="4" stroke-linejoin="round"/>
+      <rect x="41" y="44" width="19" height="38" rx="7" fill="none" stroke="#B3261E" stroke-width="3.4"/>
+      <path d="M50.5 82 C40 90 38 98 50.5 106 C63 98 61 90 50.5 82 Z" fill="none" stroke="#B3261E" stroke-width="3.4" stroke-linejoin="round"/>
+    </svg>
+    <h2>Fire Extinguisher Locator</h2>
+    <p class="versi">Versi 11.1.0</p>
+
+    <div class="kad">
+      Aplikasi ini dibangunkan untuk membantu penghuni dan pelawat Blok K, JKA PTSB
+      mengesan lokasi alat pemadam api terdekat serta laluan kecemasan terpantas
+      secara masa nyata melalui pelan lantai interaktif.
+    </div>
+
+    <div class="kad" style="padding:4px 16px;">
+      <div class="baris-info"><span>Dibangunkan oleh</span><span>Civil Engineering Department</span></div>
+      <div class="baris-info"><span>Institusi</span><span>JKA, PTSB</span></div>
+      <div class="baris-info"><span>Skop</span><span>Blok K</span></div>
+    </div>
+
+    <div class="kump-tajuk" style="text-align:left; margin-top:22px;">Log Kemaskini</div>
+    <div class="kad" style="text-align:left; padding:4px 16px;">
+      <div class="baris-info"><span><b>v11.1.0</b> — Buang laluan Aras 1/3 &amp; Bengkel K1-K4 (AI-estimated, tak cukup tepat) — kembali ke status "belum tersedia" sehingga dibina semula secara manual</span></div>
+      <div class="baris-info"><span><b>v11.0.0</b> — Rangkaian laluan LENGKAP untuk semua 7 tingkat (Aras 1/3, Bengkel K1-K4) berdasarkan pelan rasmi JKA — semua tingkat kini beri laluan koridor sebenar, bukan garis lurus sahaja</span></div>
+      <div class="baris-info"><span><b>v10.0.0</b> — Tambah 4 pelan Bengkel JKA (K1-K4) dengan 15 unit alat pemadam; tab tingkat kini boleh skrol (7 tingkat)</span></div>
+      <div class="baris-info"><span><b>v9.6.0</b> — Muka depan dikemas: badge ikon guna simbol rasmi F001 (bukan lukisan tangan), slot gambar kosong dibuang, hero lebih padat &amp; kemas</span></div>
+      <div class="baris-info"><span><b>v9.3.0</b> — Extinguisher List: semua tingkat dibalut dalam 1 kotak "JKA / Blok K" (sedia untuk blok lain akan datang)</span></div>
+      <div class="baris-info"><span><b>v9.2.0</b> — Extinguisher List jadi accordion (tekan tingkat untuk buka); tekan item terus ke Peta &amp; auto-buka popup alat tersebut</span></div>
+      <div class="baris-info"><span><b>v9.1.0</b> — Buang kad terapung hasil carian laluan (dianggap tak sesuai/berlebihan)</span></div>
+      <div class="baris-info"><span><b>v9.0.0</b> — Data alat pemadam Aras 1 &amp; 3 (18 unit); reka bentuk peta baharu (panel jadi drawer terapung, peta lebih besar); pembetulan bug: klik butang terapung (zum/pill/popup) tersekat</span></div>
+      <div class="baris-info"><span><b>v8.0.0</b> — Ikon rasmi ISO 7010 sebenar (pemadam/tangga/berkumpul), laluan kecemasan warna hitam, popup maklumat bila klik simbol pada peta</span></div>
+      <div class="baris-info"><span><b>v7.0.0</b> — Simbol keselamatan diselaraskan ikut piawaian ISO 7010/MS 2558 (alat pemadam kekal merah semua jenis; ikon titik berkumpul baharu)</span></div>
+      <div class="baris-info"><span><b>v6.0.0</b> — Editor Laluan &amp; Alat (bina data tingkat baharu); pembetulan bug kritikal: klik pada peta tak berfungsi</span></div>
+      <div class="baris-info"><span><b>v5.0.0</b> — Skrin "Pilih Blok" (JKA aktif; blok lain akan datang) + pembetulan navigasi</span></div>
+      <div class="baris-info"><span><b>v4.0.0</b> — Sokongan letak gambar sebenar (tong pemadam api &amp; latar hero)</span></div>
+      <div class="baris-info"><span><b>v1.0.0–v3.0.0</b> — Muka depan &amp; struktur halaman berasingan (Peta, Senarai, Panduan, Tentang, Tetapan)</span></div>
+    </div>
+  </main>
+
+  <nav id="nav-bawah">
+    <a href="index.html" class="aktif"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
+    <a href="blok.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.58 7-13a7 7 0 1 0-14 0c0 5.42 7 13 7 13Z"/><circle cx="12" cy="9" r="2.4"/></svg>Map</a>
+    <a href="panduan.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3.4v5.7c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6.4Z"/><path d="M8.7 12.2l2.3 2.3 4.4-4.7"/></svg>Guide</a>
+    <a href="tetapan.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

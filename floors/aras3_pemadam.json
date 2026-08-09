@@ -1,0 +1,66 @@
+{
+  "lebar_imej": 1800,
+  "tinggi_imej": 1273,
+  "alat_pemadam_api": [
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/55",
+      "no_siri_bomba": "SR032025Y086192",
+      "jenis": "ABC",
+      "lokasi": "MAKMAL KOMPUTER",
+      "aras_zon": "ARAS 3",
+      "status": "AKTIF",
+      "x": 1348.5,
+      "y": 459.0
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/56",
+      "no_siri_bomba": "SR022025Y042082",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 3",
+      "status": "AKTIF",
+      "x": 1240.2,
+      "y": 873.2
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/57",
+      "no_siri_bomba": "SR022025Y042237",
+      "jenis": "ABC",
+      "lokasi": "KORIDOR",
+      "aras_zon": "ARAS 3",
+      "status": "AKTIF",
+      "x": 1475.8,
+      "y": 294.8
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/58",
+      "no_siri_bomba": "SR022025Y042230",
+      "jenis": "ABC",
+      "lokasi": "BILIK PENSYARAH",
+      "aras_zon": "ARAS 3",
+      "status": "AKTIF",
+      "x": 806.8,
+      "y": 871.5
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/59",
+      "no_siri_bomba": "SR022025Y042397",
+      "jenis": "ABC",
+      "lokasi": "BILIK PENSYARAH",
+      "aras_zon": "ARAS 3",
+      "status": "AKTIF",
+      "x": 1140.1,
+      "y": 1086.7
+    },
+    {
+      "no_siri_aset": "KPT/PTSB/R/25/60",
+      "no_siri_bomba": "SR032025Y093105",
+      "jenis": "ABC",
+      "lokasi": "BILIK HOSE REEL",
+      "aras_zon": "ARAS 3",
+      "status": "AKTIF",
+      "x": 652.4,
+      "y": 881.5
+    }
+  ]
+}

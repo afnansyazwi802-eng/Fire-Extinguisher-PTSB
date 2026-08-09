@@ -1,0 +1,137 @@
+{
+  "aras_zon": "BENGKEL K3",
+  "nod": [
+    {
+      "id": 1,
+      "x": 270,
+      "y": 35,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 2,
+      "x": 452,
+      "y": 35,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 3,
+      "x": 452,
+      "y": 456,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 4,
+      "x": 650,
+      "y": 35,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 5,
+      "x": 870,
+      "y": 35,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 6,
+      "x": 1071,
+      "y": 35,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 7,
+      "x": 1071,
+      "y": 75,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 8,
+      "x": 1215,
+      "y": 35,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 9,
+      "x": 1334,
+      "y": 35,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 10,
+      "x": 1334,
+      "y": 443,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 11,
+      "x": 1494,
+      "y": 35,
+      "label": "",
+      "jenis": "biasa"
+    },
+    {
+      "id": 12,
+      "x": 1494,
+      "y": 300,
+      "label": "1",
+      "jenis": "berkumpul"
+    }
+  ],
+  "laluan": [
+    {
+      "dari": 1,
+      "ke": 2
+    },
+    {
+      "dari": 2,
+      "ke": 3
+    },
+    {
+      "dari": 2,
+      "ke": 4
+    },
+    {
+      "dari": 4,
+      "ke": 5
+    },
+    {
+      "dari": 5,
+      "ke": 6
+    },
+    {
+      "dari": 6,
+      "ke": 7
+    },
+    {
+      "dari": 6,
+      "ke": 8
+    },
+    {
+      "dari": 8,
+      "ke": 9
+    },
+    {
+      "dari": 9,
+      "ke": 10
+    },
+    {
+      "dari": 9,
+      "ke": 11
+    },
+    {
+      "dari": 11,
+      "ke": 12
+    }
+  ],
+  "lebar_imej": 1800,
+  "tinggi_imej": 519
+}
