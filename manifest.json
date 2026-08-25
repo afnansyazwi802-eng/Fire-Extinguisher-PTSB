@@ -1,6 +1,6 @@
 {
-  "name": "Laluan Kecemasan - Blok K, JKA PTSB",
-  "short_name": "Laluan Kecemasan",
+  "name": "Fire Extinguisher Safety & Accessibility System",
+  "short_name": "Fire Safety",
   "description": "Sistem pemetaan laluan kecemasan dan alat pemadam api di Blok K, JKA, PTSB",
   "start_url": "./index.html",
   "scope": "./",
