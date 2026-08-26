@@ -19,6 +19,9 @@
   #btn-balik { flex:none; width:32px; height:32px; border-radius:9px; background:rgba(0,0,0,.2); color:#fff; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px; }
   header h1 { font-size:13.5px; margin:0; line-height:1.3; }
   header p { margin:1px 0 0; font-size:10px; color:rgba(255,255,255,.75); }
+  #kotak-akaun { margin-left:auto; display:flex; align-items:center; gap:8px; }
+  #lbl-emel-log { font-size:10.5px; color:rgba(255,255,255,.85); }
+  #status-simpan { font-size:11px; color:var(--teks-malap); white-space:nowrap; }
 
   #toolbar { background:var(--kad); border-bottom:1px solid var(--garis); padding:9px 12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; flex:none; }
   #toolbar select { background:#171b1d; color:#fff; border:1px solid var(--garis); border-radius:8px; padding:7px 9px; font-size:12.5px; }
@@ -89,6 +92,10 @@
       <h1>Editor Laluan &amp; Alat</h1>
       <p>Klik pelan untuk letak nod, sambung laluan &amp; alat pemadam</p>
     </div>
+    <div id="kotak-akaun">
+      <span id="lbl-emel-log"></span>
+      <button class="btn" id="btn-log-keluar" style="padding:4px 8px; font-size:10.5px;">Log Keluar</button>
+    </div>
   </header>
 
   <div id="toolbar">
@@ -103,6 +110,7 @@
     <button class="btn hijau" id="btn-muat-laluan" disabled>⬇ laluan.json</button>
     <button class="btn hijau" id="btn-muat-pemadam" disabled>⬇ pemadam.json</button>
     <button class="btn" id="btn-muat-index">⬇ floors-index.json</button>
+    <span id="status-simpan"></span>
   </div>
 
   <div id="kandungan">
@@ -221,9 +229,25 @@
   </div>
 </div>
 
+<div class="overlay tunjuk" id="overlay-login">
+  <div class="modal">
+    <h3>🔒 Log Masuk Editor</h3>
+    <div class="medan"><label style="display:block; font-size:11px; color:var(--teks-malap); margin-bottom:4px;">Emel</label><input type="text" id="lg-emel" autocomplete="username"></div>
+    <div class="medan"><label style="display:block; font-size:11px; color:var(--teks-malap); margin-bottom:4px;">Kata Laluan</label><input type="password" id="lg-kp" autocomplete="current-password"></div>
+    <div class="kad-info" id="lg-ralat" style="display:none; color:#ff8a80; margin-bottom:9px;"></div>
+    <div class="modal-aksi">
+      <button class="btn hijau" id="lg-masuk" style="width:100%;">Log Masuk</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+import { db, auth } from './firebase-init.js';
+import { collection, doc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
 /* ============ Rujukan skema data (sama seperti floors/*.json & peta.html) ============
   laluan.json  : { aras_zon, nod:[{id,x,y,label,jenis}], laluan:[{dari,ke}], lebar_imej, tinggi_imej }
   pemadam.json : { lebar_imej, tinggi_imej, alat_pemadam_api:[{no_siri_aset,no_siri_bomba,jenis,lokasi,aras_zon,status,x,y}] }
@@ -246,6 +270,39 @@ let nodTerpilih = null;
 let alatArmed = null;   // item from belumTempat currently armed for placement
 let alatEditIndex = null; // index being edited via modal (-1 = new)
 
+let authUser = null;
+let dataDimuat = false;
+let sedangMuatTingkat = false;
+
+/* ---------------- Log Masuk (Firebase Auth) ---------------- */
+const ovLogin = document.getElementById('overlay-login');
+onAuthStateChanged(auth, async (user) => {
+  authUser = user;
+  if (user) {
+    ovLogin.classList.remove('tunjuk');
+    document.getElementById('lbl-emel-log').textContent = user.email;
+    if (!dataDimuat) { dataDimuat = true; await muatSenaraiSediaAda(); }
+  } else {
+    ovLogin.classList.add('tunjuk');
+    document.getElementById('lg-ralat').style.display = 'none';
+  }
+});
+document.getElementById('lg-masuk').addEventListener('click', tandaMasuk);
+document.getElementById('lg-kp').addEventListener('keydown', (e) => { if (e.key === 'Enter') tandaMasuk(); });
+async function tandaMasuk() {
+  const emel = document.getElementById('lg-emel').value.trim();
+  const kp = document.getElementById('lg-kp').value;
+  const ralatEl = document.getElementById('lg-ralat');
+  ralatEl.style.display = 'none';
+  try {
+    await signInWithEmailAndPassword(auth, emel, kp);
+  } catch (err) {
+    ralatEl.textContent = 'Log masuk gagal — semak emel/kata laluan.';
+    ralatEl.style.display = '';
+  }
+}
+document.getElementById('btn-log-keluar').addEventListener('click', () => signOut(auth));
+
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -254,30 +311,50 @@ function toast(msg) {
   toast._h = setTimeout(() => t.classList.remove('tunjuk'), 2600);
 }
 
-/* ---------------- Muat senarai tingkat sedia ada ---------------- */
+/* ---------------- Muat senarai tingkat sedia ada (dari Firestore) ---------------- */
 async function muatSenaraiSediaAda() {
   try {
-    const res = await fetch('floors/floors-index.json');
-    if (!res.ok) return;
-    const list = await res.json();
-    for (const info of list) {
-      const f = { id: info.id, nama: info.nama, imej: info.imej, lebar: 0, tinggi: 0, nod: [], laluan: [], pemadam: [], belumTempat: [] };
-      try {
-        const pem = await (await fetch(info.pemadam)).json();
-        f.pemadam = pem.alat_pemadam_api || [];
-        f.lebar = pem.lebar_imej; f.tinggi = pem.tinggi_imej;
-      } catch (e) {}
-      if (info.laluan) {
-        try {
-          const lal = await (await fetch(info.laluan)).json();
-          f.nod = lal.nod || []; f.laluan = lal.laluan || [];
-          f.lebar = f.lebar || lal.lebar_imej; f.tinggi = f.tinggi || lal.tinggi_imej;
-        } catch (e) {}
-      }
+    const snap = await getDocs(collection(db, 'floors'));
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      const f = {
+        id: docSnap.id, nama: data.nama || docSnap.id, imej: data.imej || ('floors/' + docSnap.id + '.png'),
+        lebar: data.lebar_imej || 0, tinggi: data.tinggi_imej || 0,
+        nod: data.nod || [], laluan: data.laluan || [], pemadam: data.pemadam || [], belumTempat: []
+      };
       FLOORS[f.id] = f;
       tambahOptionTingkat(f.id, f.nama);
-    }
-  } catch (e) { /* floors-index.json mungkin tiada — takpe, boleh cipta tingkat baharu */ }
+    });
+    toast('Data dimuatkan dari Firestore (' + snap.size + ' tingkat).');
+  } catch (e) {
+    console.error(e);
+    toast('Ralat memuatkan data dari Firestore — semak Security Rules / sambungan.');
+  }
+}
+
+/* ---------------- Simpan ke Firestore (live sync) ---------------- */
+let simpanTimer = null;
+function jadualSimpan() {
+  if (!FLOOR_AKTIF || !authUser || sedangMuatTingkat) return;
+  const statusEl = document.getElementById('status-simpan');
+  if (statusEl) { statusEl.textContent = '☁️ Menyimpan...'; statusEl.style.color = 'var(--teks-malap)'; }
+  clearTimeout(simpanTimer);
+  simpanTimer = setTimeout(() => simpanFirestoreSekarang(FLOOR_AKTIF), 700);
+}
+async function simpanFirestoreSekarang(f) {
+  const statusEl = document.getElementById('status-simpan');
+  try {
+    await setDoc(doc(db, 'floors', f.id), {
+      nama: f.nama,
+      imej: 'floors/' + f.id + '.png',
+      lebar_imej: f.lebar, tinggi_imej: f.tinggi,
+      nod: f.nod, laluan: f.laluan, pemadam: f.pemadam
+    });
+    if (statusEl) { statusEl.textContent = '☁️ Tersimpan'; statusEl.style.color = 'var(--hijau)'; }
+  } catch (err) {
+    console.error(err);
+    if (statusEl) { statusEl.textContent = '⚠️ Ralat simpan'; statusEl.style.color = 'var(--merah)'; }
+  }
 }
 
 function tambahOptionTingkat(id, nama) {
@@ -291,6 +368,7 @@ function tambahOptionTingkat(id, nama) {
 function bukaTingkat(id) {
   const f = FLOORS[id];
   if (!f) return;
+  sedangMuatTingkat = true;
   FLOOR_AKTIF = f;
   pilihTingkatEl.value = id;
   nodTerpilih = null; sambungDari = null; alatArmed = null;
@@ -306,6 +384,7 @@ function bukaTingkat(id) {
     imgEl.style.width = f.lebar + 'px'; imgEl.style.height = f.tinggi + 'px';
     suaiPapar();
     lukis();
+    sedangMuatTingkat = false;
   };
   imgEl.src = f.imej;
 
@@ -336,7 +415,8 @@ document.getElementById('tb-cipta').addEventListener('click', () => {
     ovTb.classList.remove('tunjuk');
     document.getElementById('tb-id').value = ''; document.getElementById('tb-nama').value = ''; document.getElementById('tb-gambar').value = '';
     bukaTingkat(id);
-    toast('Tingkat "' + nama + '" dicipta.');
+    simpanFirestoreSekarang(f);
+    toast('Tingkat "' + nama + '" dicipta. PENTING: muat naik gambar "' + id + '.png" ke folder floors/ dalam repo GitHub supaya ia dapat dipapar untuk semua orang.');
   };
   reader.readAsDataURL(fail);
 });
@@ -457,6 +537,8 @@ function lukis() {
     const n = nodById[sambungDari];
     if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, 13, 0, Math.PI*2); ctx.strokeStyle = '#C99A2E'; ctx.lineWidth = 3; ctx.stroke(); }
   }
+
+  jadualSimpan();
 }
 
 /* ---------------- Zum & Pan (sama corak seperti peta.html) ---------------- */

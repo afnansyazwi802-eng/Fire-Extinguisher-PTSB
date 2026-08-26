@@ -1,6 +1,6 @@
 {
   "lebar_imej": 1800,
-  "tinggi_imej": 1273,
+  "tinggi_imej": 1485,
   "alat_pemadam_api": [
     {
       "no_siri_aset": "KPT/PTSB/R/25/55",
@@ -10,7 +10,7 @@
       "aras_zon": "ARAS 3",
       "status": "AKTIF",
       "x": 1348.5,
-      "y": 459.0
+      "y": 535.4
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/56",
@@ -20,7 +20,7 @@
       "aras_zon": "ARAS 3",
       "status": "AKTIF",
       "x": 1240.2,
-      "y": 873.2
+      "y": 1018.6
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/57",
@@ -30,7 +30,7 @@
       "aras_zon": "ARAS 3",
       "status": "AKTIF",
       "x": 1475.8,
-      "y": 294.8
+      "y": 343.9
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/58",
@@ -40,7 +40,7 @@
       "aras_zon": "ARAS 3",
       "status": "AKTIF",
       "x": 806.8,
-      "y": 871.5
+      "y": 1016.6
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/59",
@@ -50,7 +50,7 @@
       "aras_zon": "ARAS 3",
       "status": "AKTIF",
       "x": 1140.1,
-      "y": 1086.7
+      "y": 1267.7
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/60",
@@ -60,7 +60,7 @@
       "aras_zon": "ARAS 3",
       "status": "AKTIF",
       "x": 652.4,
-      "y": 881.5
+      "y": 1028.3
     }
   ]
 }

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Migrasi Data ke Firestore — Fire Extinguisher Safety &amp; Accessibility System</title>
+<meta name="theme-color" content="#B3261E" />
+<style>
+  :root { --merah:#B3261E; --hijau:#1E7B45; --oren:#C99A2E; --latar:#14181B; --kad:#1F2428; --teks:#EDEFF1; --teks-malap:#9AA3A9; --garis:#2C3338; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; min-height:100%; font-family:-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--latar); color:var(--teks); }
+  #app { max-width:560px; margin:0 auto; padding:24px 18px 60px; }
+  h1 { font-size:19px; margin:0 0 4px; }
+  p.sub { color:var(--teks-malap); font-size:12.5px; margin:0 0 20px; line-height:1.6; }
+  .kad { background:var(--kad); border:1px solid var(--garis); border-radius:12px; padding:16px; margin-bottom:14px; }
+  .medan { margin-bottom:10px; }
+  .medan label { display:block; font-size:11px; color:var(--teks-malap); margin-bottom:4px; }
+  .medan input { width:100%; background:#171b1d; border:1px solid var(--garis); color:#fff; border-radius:8px; padding:9px 10px; font-size:13px; }
+  .btn { border:1px solid var(--garis); background:#171b1d; color:var(--teks); border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer; width:100%; }
+  .btn.hijau { background:var(--hijau); border-color:var(--hijau); color:#fff; }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  #log { background:#0d1012; border:1px solid var(--garis); border-radius:10px; padding:12px; font-size:12px; line-height:1.8; font-family:ui-monospace,Menlo,monospace; height:260px; overflow-y:auto; white-space:pre-wrap; }
+  .ok { color:#7fd99a; } .err { color:#ff8a80; } .info { color:var(--teks-malap); }
+  .amaran { background:rgba(201,154,46,.12); border:1px solid var(--oren); border-radius:10px; padding:12px 14px; font-size:12px; line-height:1.6; margin-bottom:14px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>🔄 Migrasi Data ke Firestore</h1>
+  <p class="sub">Alat sekali-guna untuk salin data 7 tingkat sedia ada (fail dalam folder <code>floors/</code>) ke Firestore. Jalankan ini SEKALI sahaja lepas Firestore &amp; Authentication diaktifkan.</p>
+
+  <div class="amaran">⚠️ Jalankan migrasi ni <b>sekali sahaja</b>. Kalau dijalankan berulang kali, data terkini dalam Firestore (kalau dah ada edit dari editor.html) akan <b>ditimpa semula</b> dengan data asal dari fail JSON statik.</div>
+
+  <div class="kad" id="kad-login">
+    <div class="medan"><label>Emel</label><input type="text" id="lg-emel" autocomplete="username"></div>
+    <div class="medan"><label>Kata Laluan</label><input type="password" id="lg-kp" autocomplete="current-password"></div>
+    <button class="btn hijau" id="lg-masuk">Log Masuk</button>
+    <div id="lg-status" class="info" style="margin-top:8px; font-size:12px;"></div>
+  </div>
+
+  <div class="kad" id="kad-migrasi" style="display:none">
+    <button class="btn hijau" id="btn-mula">▶ Mula Migrasi</button>
+  </div>
+
+  <div id="log">Menunggu log masuk...</div>
+</div>
+
+<script type="module">
+import { db, auth } from './firebase-init.js';
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+const logEl = document.getElementById('log');
+function log(msg, kelas) {
+  const baris = document.createElement('div');
+  if (kelas) baris.className = kelas;
+  baris.textContent = msg;
+  logEl.appendChild(baris);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+onAuthStateChanged(auth, (user) => {
+  document.getElementById('kad-login').style.display = user ? 'none' : '';
+  document.getElementById('kad-migrasi').style.display = user ? '' : 'none';
+  if (user) log('Log masuk sebagai ' + user.email, 'ok');
+});
+
+document.getElementById('lg-masuk').addEventListener('click', async () => {
+  const emel = document.getElementById('lg-emel').value.trim();
+  const kp = document.getElementById('lg-kp').value;
+  const statusEl = document.getElementById('lg-status');
+  try {
+    await signInWithEmailAndPassword(auth, emel, kp);
+    statusEl.textContent = '';
+  } catch (err) {
+    statusEl.textContent = 'Log masuk gagal — semak emel/kata laluan.';
+    statusEl.className = 'err';
+  }
+});
+
+async function muatJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Gagal muat: ' + url);
+  return res.json();
+}
+
+document.getElementById('btn-mula').addEventListener('click', async () => {
+  document.getElementById('btn-mula').disabled = true;
+  logEl.innerHTML = '';
+  log('Membaca floors-index.json...');
+  let senarai;
+  try {
+    senarai = await muatJSON('floors/floors-index.json');
+  } catch (e) {
+    log('Ralat baca floors-index.json: ' + e.message, 'err');
+    document.getElementById('btn-mula').disabled = false;
+    return;
+  }
+  log('Jumpa ' + senarai.length + ' tingkat. Memulakan migrasi...');
+
+  for (const info of senarai) {
+    try {
+      let nod = [], laluan = [], lebar = 0, tinggi = 0;
+      const pem = await muatJSON(info.pemadam);
+      const pemadam = pem.alat_pemadam_api || [];
+      lebar = pem.lebar_imej || 0; tinggi = pem.tinggi_imej || 0;
+      if (info.laluan) {
+        const lal = await muatJSON(info.laluan);
+        nod = lal.nod || []; laluan = lal.laluan || [];
+        lebar = lebar || lal.lebar_imej; tinggi = tinggi || lal.tinggi_imej;
+      }
+      await setDoc(doc(db, 'floors', info.id), {
+        nama: info.nama, imej: info.imej, lebar_imej: lebar, tinggi_imej: tinggi,
+        nod, laluan, pemadam
+      });
+      log('✔ ' + info.id + ' (' + info.nama + ') — ' + nod.length + ' nod, ' + pemadam.length + ' alat pemadam', 'ok');
+    } catch (e) {
+      log('✘ ' + info.id + ' gagal: ' + e.message, 'err');
+    }
+  }
+  log('Migrasi selesai.', 'ok');
+  document.getElementById('btn-mula').disabled = false;
+});
+</script>
+</body>
+</html>

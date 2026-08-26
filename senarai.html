@@ -98,24 +98,22 @@
   </nav>
 </div>
 
-<script>
-let SEMUA = [];
+<script type="module">
+import { db } from './firebase-init.js';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
-async function muatJSON(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('gagal muat ' + url);
-  return res.json();
-}
+let SEMUA = [];
 
 async function mula() {
   const senaraiEl = document.getElementById('senarai');
   try {
-    const tingkatList = await muatJSON('floors/floors-index.json');
-    for (const t of tingkatList) {
-      const data = await muatJSON(t.pemadam);
-      data.alat_pemadam_api.forEach(p => SEMUA.push({ ...p, tingkat: t.nama, tingkatId: t.id }));
-    }
+    const snap = await getDocs(collection(db, 'floors'));
+    snap.forEach(d => {
+      const data = d.data();
+      (data.pemadam || []).forEach(p => SEMUA.push({ ...p, tingkat: data.nama, tingkatId: d.id }));
+    });
   } catch (e) {
+    console.error(e);
     senaraiEl.innerHTML = '<div id="kosong">Ralat memuatkan data alat pemadam api.</div>';
     return;
   }

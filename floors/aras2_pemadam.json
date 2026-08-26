@@ -1,6 +1,6 @@
 {
-  "lebar_imej": 1194,
-  "tinggi_imej": 794,
+  "lebar_imej": 1800,
+  "tinggi_imej": 1406,
   "alat_pemadam_api": [
     {
       "no_siri_aset": "KPT/PTSB/R/25/69",
@@ -9,8 +9,8 @@
       "lokasi": "KORIDOR",
       "aras_zon": "ARAS 2",
       "status": "AKTIF",
-      "x": 524,
-      "y": 357
+      "x": 789.9,
+      "y": 632.2
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/63",
@@ -19,8 +19,8 @@
       "lokasi": "BILIK HOSE REEL",
       "aras_zon": "ARAS 2",
       "status": "AKTIF",
-      "x": 461,
-      "y": 559
+      "x": 695.0,
+      "y": 989.9
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/64",
@@ -29,8 +29,8 @@
       "lokasi": "BILIK PENSYARAH",
       "aras_zon": "ARAS 2",
       "status": "AKTIF",
-      "x": 570,
-      "y": 554
+      "x": 859.3,
+      "y": 981.0
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/65",
@@ -39,8 +39,8 @@
       "lokasi": "BILIK PENSYARAH",
       "aras_zon": "ARAS 2",
       "status": "AKTIF",
-      "x": 779,
-      "y": 554
+      "x": 1174.4,
+      "y": 981.0
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/70",
@@ -49,8 +49,8 @@
       "lokasi": "KORIDOR",
       "aras_zon": "ARAS 2",
       "status": "AKTIF",
-      "x": 912,
-      "y": 357
+      "x": 1374.9,
+      "y": 632.2
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/66",
@@ -59,8 +59,8 @@
       "lokasi": "KORIDOR",
       "aras_zon": "ARAS 2",
       "status": "AKTIF",
-      "x": 999,
-      "y": 181
+      "x": 1506.0,
+      "y": 320.5
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/68",
@@ -69,8 +69,8 @@
       "lokasi": "KORIDOR",
       "aras_zon": "ARAS 2",
       "status": "AKTIF",
-      "x": 761,
-      "y": 181
+      "x": 1147.2,
+      "y": 320.5
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/67",
@@ -79,8 +79,8 @@
       "lokasi": "KORIDOR",
       "aras_zon": "ARAS 2",
       "status": "AKTIF",
-      "x": 407,
-      "y": 154
+      "x": 613.6,
+      "y": 272.7
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/62",
@@ -89,8 +89,8 @@
       "lokasi": "KORIDOR",
       "aras_zon": "ARAS 2",
       "status": "AKTIF",
-      "x": 683,
-      "y": 546
+      "x": 1029.6,
+      "y": 966.8
     },
     {
       "no_siri_aset": "KPT/PTSB/R/25/61",
@@ -99,8 +99,8 @@
       "lokasi": "BILIK HOSE REEL",
       "aras_zon": "ARAS 2",
       "status": "AKTIF",
-      "x": 846,
-      "y": 555
+      "x": 1275.4,
+      "y": 982.8
     }
   ]
 }

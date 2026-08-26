@@ -171,7 +171,10 @@
   </div>
 </div>
 
-<script>
+<script type="module">
+import { db } from './firebase-init.js';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
 let DATA_LALUAN = null, DATA_PEMADAM = null;
 let nodById = {}, adjList = {}, tanggaList = [], berkumpulList = [];
 let titikSaya = null, laluanTerpilih = null;
@@ -202,9 +205,11 @@ async function muatJSON(url) {
 
 async function mula() {
   try {
-    SENARAI_TINGKAT = await muatJSON('floors/floors-index.json');
+    const snap = await getDocs(collection(db, 'floors'));
+    SENARAI_TINGKAT = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (e) {
-    memuatEl.textContent = 'Ralat: gagal muatkan floors-index.json';
+    console.error(e);
+    memuatEl.textContent = 'Ralat: gagal muatkan data dari Firestore';
     return;
   }
   tabTingkatEl.innerHTML = '';
@@ -250,8 +255,8 @@ async function muatTingkat(info) {
   resetPanel();
   tutupPopup();
 
-  DATA_PEMADAM = await muatJSON(info.pemadam);
-  DATA_LALUAN = info.laluan ? await muatJSON(info.laluan) : null;
+  DATA_PEMADAM = { alat_pemadam_api: info.pemadam || [], lebar_imej: info.lebar_imej, tinggi_imej: info.tinggi_imej };
+  DATA_LALUAN = (info.nod && info.nod.length) ? { nod: info.nod, laluan: info.laluan || [], lebar_imej: info.lebar_imej, tinggi_imej: info.tinggi_imej } : null;
 
   document.getElementById('nota-tiada-laluan').style.display = DATA_LALUAN ? 'none' : 'block';
   document.getElementById('togol-rangkaian').classList.toggle('lumpuh', !DATA_LALUAN);
