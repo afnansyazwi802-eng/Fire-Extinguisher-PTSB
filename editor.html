@@ -262,7 +262,7 @@ const kosongEl = document.getElementById('kosong-peta');
 const kawalanZumEl = document.getElementById('kawalan-zum');
 const pilihTingkatEl = document.getElementById('pilih-tingkat');
 
-let FLOORS = {};      // id -> { id, nama, imej(src url), lebar, tinggi, nod, laluan, pemadam, belumTempat: [] }
+let FLOORS = {};      // id -> { id, nama, imejAlat/lebarAlat/tinggiAlat/pemadam, imejLaluan/lebarLaluan/tinggiLaluan/nod/laluan, belumTempat }
 let FLOOR_AKTIF = null;
 let MODE = 'nod';      // 'nod' | 'alat'
 let sambungDari = null; // node id currently connecting from
@@ -318,9 +318,13 @@ async function muatSenaraiSediaAda() {
     snap.forEach(docSnap => {
       const data = docSnap.data();
       const f = {
-        id: docSnap.id, nama: data.nama || docSnap.id, imej: data.imej || ('floors/' + docSnap.id + '.png'),
-        lebar: data.lebar_imej || 0, tinggi: data.tinggi_imej || 0,
-        nod: data.nod || [], laluan: data.laluan || [], pemadam: data.pemadam || [], belumTempat: []
+        id: docSnap.id, nama: data.nama || docSnap.id,
+        imejAlat: data.imej || ('floors/' + docSnap.id + '.png'),
+        lebarAlat: data.lebar_imej || 0, tinggiAlat: data.tinggi_imej || 0,
+        pemadam: data.pemadam || [],
+        imejLaluan: data.imej_laluan || data.imej || ('floors/' + docSnap.id + '.png'),
+        lebarLaluan: data.lebar_laluan || data.lebar_imej || 0, tinggiLaluan: data.tinggi_laluan || data.tinggi_imej || 0,
+        nod: data.nod || [], laluan: data.laluan || [], belumTempat: []
       };
       FLOORS[f.id] = f;
       tambahOptionTingkat(f.id, f.nama);
@@ -344,11 +348,13 @@ function jadualSimpan() {
 async function simpanFirestoreSekarang(f) {
   const statusEl = document.getElementById('status-simpan');
   try {
+    const imejAlatPath = (f.imejAlat && f.imejAlat.startsWith('data:')) ? ('floors/' + f.id + '.png') : f.imejAlat;
+    const imejLaluanPath = (f.imejLaluan && f.imejLaluan.startsWith('data:')) ? ('floors/' + f.id + '.png') : f.imejLaluan;
     await setDoc(doc(db, 'floors', f.id), {
       nama: f.nama,
-      imej: 'floors/' + f.id + '.png',
-      lebar_imej: f.lebar, tinggi_imej: f.tinggi,
-      nod: f.nod, laluan: f.laluan, pemadam: f.pemadam
+      imej: imejAlatPath, lebar_imej: f.lebarAlat, tinggi_imej: f.tinggiAlat, pemadam: f.pemadam,
+      imej_laluan: imejLaluanPath, lebar_laluan: f.lebarLaluan, tinggi_laluan: f.tinggiLaluan,
+      nod: f.nod, laluan: f.laluan
     });
     if (statusEl) { statusEl.textContent = '☁️ Tersimpan'; statusEl.style.color = 'var(--hijau)'; }
   } catch (err) {
@@ -368,7 +374,6 @@ function tambahOptionTingkat(id, nama) {
 function bukaTingkat(id) {
   const f = FLOORS[id];
   if (!f) return;
-  sedangMuatTingkat = true;
   FLOOR_AKTIF = f;
   pilihTingkatEl.value = id;
   nodTerpilih = null; sambungDari = null; alatArmed = null;
@@ -378,21 +383,36 @@ function bukaTingkat(id) {
   viewport.style.display = '';
   kawalanZumEl.style.display = '';
 
-  imgEl.onload = () => {
-    if (!f.lebar) { f.lebar = imgEl.naturalWidth; f.tinggi = imgEl.naturalHeight; }
-    canvas.width = f.lebar; canvas.height = f.tinggi;
-    imgEl.style.width = f.lebar + 'px'; imgEl.style.height = f.tinggi + 'px';
-    suaiPapar();
-    lukis();
-    sedangMuatTingkat = false;
-  };
-  imgEl.src = f.imej;
+  muatImejUntukMod();
 
   document.getElementById('btn-muat-laluan').disabled = false;
   document.getElementById('btn-muat-pemadam').disabled = false;
   paparSenaraiBelumTempat();
 }
 pilihTingkatEl.addEventListener('change', () => { if (pilihTingkatEl.value) bukaTingkat(pilihTingkatEl.value); });
+
+/* Muatkan imej latar yang betul (Alat vs Nod&Laluan) mengikut MODE semasa */
+function muatImejUntukMod() {
+  const f = FLOOR_AKTIF;
+  if (!f) return;
+  sedangMuatTingkat = true;
+  const src = MODE === 'alat' ? f.imejAlat : f.imejLaluan;
+  imgEl.onload = () => {
+    if (MODE === 'alat') {
+      if (!f.lebarAlat) { f.lebarAlat = imgEl.naturalWidth; f.tinggiAlat = imgEl.naturalHeight; }
+      canvas.width = f.lebarAlat; canvas.height = f.tinggiAlat;
+      imgEl.style.width = f.lebarAlat + 'px'; imgEl.style.height = f.tinggiAlat + 'px';
+    } else {
+      if (!f.lebarLaluan) { f.lebarLaluan = imgEl.naturalWidth; f.tinggiLaluan = imgEl.naturalHeight; }
+      canvas.width = f.lebarLaluan; canvas.height = f.tinggiLaluan;
+      imgEl.style.width = f.lebarLaluan + 'px'; imgEl.style.height = f.tinggiLaluan + 'px';
+    }
+    suaiPapar();
+    lukis();
+    sedangMuatTingkat = false;
+  };
+  imgEl.src = src;
+}
 
 /* ---------------- Tingkat baharu ---------------- */
 const ovTb = document.getElementById('overlay-tingkat-baharu');
@@ -408,7 +428,9 @@ document.getElementById('tb-cipta').addEventListener('click', () => {
   if (!fail) { toast('Sila muat naik gambar pelan.'); return; }
   const reader = new FileReader();
   reader.onload = () => {
-    const f = { id, nama, imej: reader.result, lebar: 0, tinggi: 0, nod: [], laluan: [], pemadam: [],
+    const f = { id, nama,
+      imejAlat: reader.result, lebarAlat: 0, tinggiAlat: 0, pemadam: [],
+      imejLaluan: reader.result, lebarLaluan: 0, tinggiLaluan: 0, nod: [], laluan: [],
       belumTempat: FLOORS[id]?.belumTempat || [] };
     FLOORS[id] = f;
     tambahOptionTingkat(id, nama);
@@ -425,12 +447,14 @@ document.getElementById('tb-cipta').addEventListener('click', () => {
 document.getElementById('mod-nod').addEventListener('click', () => tukarMod('nod'));
 document.getElementById('mod-alat').addEventListener('click', () => tukarMod('alat'));
 function tukarMod(m) {
+  if (MODE === m) return;
   MODE = m;
   document.getElementById('mod-nod').classList.toggle('aktif', m === 'nod');
   document.getElementById('mod-alat').classList.toggle('aktif', m === 'alat');
   nodTerpilih = null; sambungDari = null; alatArmed = null;
   kemaskiniPanel();
-  lukis();
+  if (FLOOR_AKTIF) muatImejUntukMod();
+  else lukis();
 }
 
 /* ---------------- Panel sisi ---------------- */

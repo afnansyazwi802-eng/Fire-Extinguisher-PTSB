@@ -28,6 +28,11 @@
     padding:7px 13px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
   #tab-tingkat button.aktif { background:var(--oren); border-color:var(--oren); color:#1a1a1a; }
 
+  #strip-mod { flex:none; background:#0d1012; border-bottom:1px solid var(--garis); display:flex; gap:8px; padding:8px 12px; }
+  #strip-mod .mod-btn { flex:1; border:1px solid var(--garis); background:#171b1d; color:var(--teks-malap);
+    padding:9px 10px; border-radius:9px; font-size:12px; font-weight:700; cursor:pointer; }
+  #strip-mod .mod-btn.aktif { background:var(--merah); border-color:var(--merah); color:#fff; }
+
   #kandungan { flex:1; position:relative; min-height:0; overflow:hidden; }
   #peta-bekas { position:absolute; inset:0; overflow:hidden; background:#0d1012; touch-action:none; }
   #peta-viewport { position:absolute; top:0; left:0; transform-origin:0 0; will-change:transform; }
@@ -90,6 +95,9 @@
   .catatan { font-size:10.5px; color:var(--teks-malap); line-height:1.5; border-top:1px solid var(--garis); padding-top:12px; }
   #nota-tiada-laluan { display:none; font-size:11px; color:var(--oren); background:rgba(201,154,46,.1); border:1px solid rgba(201,154,46,.35);
     border-radius:9px; padding:9px 11px; line-height:1.5; }
+  body.mod-alat .leg-laluan, body.mod-alat #togol-rangkaian, body.mod-alat .kotak-cari.utk-laluan { display:none !important; }
+  body.mod-laluan .leg-alat, body.mod-laluan #togol-pemadam, body.mod-laluan .kotak-cari.utk-alat { display:none !important; }
+  body.mod-laluan .kotak-cari { display:none; }
   @media (max-width: 760px) {
     #sisi { left:0; right:0; top:auto; bottom:0; width:auto; max-height:72vh; border-left:none;
       border-top:1px solid var(--garis); border-radius:18px 18px 0 0; transform:translateY(100%); }
@@ -103,11 +111,15 @@
   <header>
     <a href="blok.html" id="btn-balik" title="Kembali ke Pilih Blok" aria-label="Kembali ke Pilih Blok">←</a>
     <div>
-      <h1>Laluan Kecemasan — Blok K, JKA PTSB</h1>
-      <p>Klik atas pelan untuk cari alat pemadam terdekat</p>
+      <h1>Fire Extinguisher Safety &amp; Accessibility System</h1>
+      <p id="sub-header">Klik atas pelan untuk lihat maklumat alat pemadam</p>
     </div>
   </header>
   <div id="strip-tingkat"><div id="tab-tingkat"></div></div>
+  <div id="strip-mod">
+    <button id="mod-alat" class="mod-btn aktif">🧯 Kedudukan Alat</button>
+    <button id="mod-laluan" class="mod-btn">🚪 Laluan Kecemasan</button>
+  </div>
 
   <div id="kandungan">
     <div id="peta-bekas">
@@ -139,13 +151,13 @@
       <button id="sisi-tutup" aria-label="Tutup">×</button>
 
       <div id="nota-tiada-laluan">
-        ℹ️ Rangkaian laluan terperinci belum tersedia untuk tingkat ini — hanya lokasi alat pemadam api dipaparkan buat masa ini.
+        ℹ️ Rangkaian laluan belum tersedia untuk tingkat ini.
       </div>
 
-      <div>
+      <div id="blok-lapisan">
         <label class="tajuk">Paparan Lapisan</label>
         <div class="togol-row">
-          <div class="togol hidup" id="togol-rangkaian">➰ Rangkaian</div>
+          <div class="togol hidup" id="togol-rangkaian">➰ Sambungan Laluan</div>
           <div class="togol hidup" id="togol-pemadam">🧯 Pemadam Api</div>
         </div>
       </div>
@@ -153,19 +165,18 @@
       <div>
         <label class="tajuk">Legenda</label>
         <div id="legenda">
-          <div><span class="lc-dot" style="background:#B3261E; border-radius:50%;"></span> Lokasi anda (klik)</div>
-          <div><img class="lc-ikon" src="simbol/tangga.svg" alt=""> Tangga / Laluan Keluar</div>
-          <div><img class="lc-ikon" src="simbol/berkumpul.png" alt=""> Titik Berkumpul</div>
-          <div><img class="lc-ikon" src="simbol/pemadam.png" alt=""> Alat Pemadam Api</div>
-          <div><span class="lc-dot" style="background:transparent; border:3px solid #111;"></span> Laluan Kecemasan</div>
+          <div class="leg-alat"><img class="lc-ikon" src="simbol/pemadam.png" alt=""> Alat Pemadam Api</div>
+          <div class="leg-laluan"><span class="lc-dot" style="background:#B3261E; border-radius:50%;"></span> Lokasi anda (klik)</div>
+          <div class="leg-laluan"><img class="lc-ikon" src="simbol/tangga.svg" alt=""> Tangga / Laluan Keluar</div>
+          <div class="leg-laluan"><img class="lc-ikon" src="simbol/berkumpul.png" alt=""> Titik Berkumpul</div>
+          <div class="leg-laluan"><span class="lc-dot" style="background:transparent; border:3px solid #111;"></span> Laluan Kecemasan</div>
         </div>
       </div>
 
-      <button id="btn-reset">↺ Padam Carian Laluan</button>
+      <button id="btn-reset" class="leg-laluan">↺ Padam Carian Laluan</button>
 
       <div class="catatan" id="catatan-tingkat">
-        Sistem ini memuatkan data terus daripada folder <code>floors/</code>. Nak tambah/edit rangkaian laluan untuk
-        Aras 1 &amp; 3, guna <code>editor.html</code>.
+        Sistem ini memuatkan data terus daripada Firestore. Nak tambah/edit data, guna <code>editor.html</code>.
       </div>
     </div>
   </div>
@@ -180,6 +191,7 @@ let nodById = {}, adjList = {}, tanggaList = [], berkumpulList = [];
 let titikSaya = null, laluanTerpilih = null;
 let papRangkaian = true, papPemadam = true;
 let SENARAI_TINGKAT = [], TINGKAT_SEMASA = null;
+let MOD = 'alat'; /* 'alat' | 'laluan' */
 let popupAktif = null; /* { x, y } dlm koordinat kanvas semula jadi, untuk kekal posisi bila zum/pan */
 
 const img = document.getElementById('peta-img');
@@ -226,10 +238,11 @@ async function mula() {
   await muatTingkat(tingkatAwal);
 
   const nodDariURL = paramURL.get('nod');
-  if (nodDariURL) cariLaluanDariNod(Number(nodDariURL));
+  if (nodDariURL) { tukarMod('laluan'); cariLaluanDariNod(Number(nodDariURL)); }
 
   const asetDariURL = paramURL.get('aset');
   if (asetDariURL) {
+    tukarMod('alat');
     const p = DATA_PEMADAM.alat_pemadam_api.find(pp => pp.no_siri_aset === asetDariURL);
     if (p) {
       bukaPopup(p.x, p.y, `<div class="p-tajuk">🧯 Alat Pemadam Api</div>
@@ -249,18 +262,16 @@ async function muatTingkat(info) {
   TINGKAT_SEMASA = info;
   [...tabTingkatEl.children].forEach(b => b.classList.toggle('aktif', b.dataset.id === info.id));
 
-  memuatEl.style.display = 'flex';
-  memuatEl.textContent = 'Memuatkan ' + info.nama + '...';
   titikSaya = null; laluanTerpilih = null;
   resetPanel();
   tutupPopup();
 
-  DATA_PEMADAM = { alat_pemadam_api: info.pemadam || [], lebar_imej: info.lebar_imej, tinggi_imej: info.tinggi_imej };
-  DATA_LALUAN = (info.nod && info.nod.length) ? { nod: info.nod, laluan: info.laluan || [], lebar_imej: info.lebar_imej, tinggi_imej: info.tinggi_imej } : null;
+  DATA_PEMADAM = { alat_pemadam_api: info.pemadam || [], lebar_imej: info.lebar_imej, tinggi_imej: info.tinggi_imej, imej: info.imej };
+  const lebarL = info.lebar_laluan || info.lebar_imej, tinggiL = info.tinggi_laluan || info.tinggi_imej;
+  DATA_LALUAN = (info.nod && info.nod.length) ? { nod: info.nod, laluan: info.laluan || [], lebar_imej: lebarL, tinggi_imej: tinggiL, imej: info.imej_laluan || info.imej } : null;
 
-  document.getElementById('nota-tiada-laluan').style.display = DATA_LALUAN ? 'none' : 'block';
+  document.getElementById('nota-tiada-laluan').style.display = (MOD === 'laluan' && !DATA_LALUAN) ? 'block' : 'none';
   document.getElementById('togol-rangkaian').classList.toggle('lumpuh', !DATA_LALUAN);
-  document.getElementById('teks-kiraan').textContent = `${DATA_PEMADAM.alat_pemadam_api.length} unit APK — ${info.nama}`;
 
   nodById = {}; adjList = {}; tanggaList = []; berkumpulList = [];
   if (DATA_LALUAN) {
@@ -276,16 +287,47 @@ async function muatTingkat(info) {
     berkumpulList = DATA_LALUAN.nod.filter(n => n.jenis === 'berkumpul');
   }
 
-  img.src = info.imej;
-  await new Promise(resolve => { img.onload = resolve; });
-  const lebar = DATA_LALUAN ? DATA_LALUAN.lebar_imej : DATA_PEMADAM.lebar_imej;
-  const tinggi = DATA_LALUAN ? DATA_LALUAN.tinggi_imej : DATA_PEMADAM.tinggi_imej;
-  canvas.width = lebar; canvas.height = tinggi;
-  img.style.width = lebar + 'px'; img.style.height = tinggi + 'px';
+  await muatkanImejUntukMod();
+}
+
+/* Muatkan imej yang betul (alat vs laluan) mengikut MOD semasa, tanpa muat semula senarai tingkat */
+async function muatkanImejUntukMod() {
+  const sumber = MOD === 'laluan' ? DATA_LALUAN : DATA_PEMADAM;
+  document.getElementById('teks-kiraan').textContent = MOD === 'laluan'
+    ? `${tanggaList.length + berkumpulList.length} destinasi — ${TINGKAT_SEMASA.nama}`
+    : `${DATA_PEMADAM.alat_pemadam_api.length} unit APK — ${TINGKAT_SEMASA.nama}`;
+
+  if (!sumber) { lukis(); return; }
+
+  memuatEl.style.display = 'flex';
+  memuatEl.textContent = 'Memuatkan ' + TINGKAT_SEMASA.nama + '...';
+  img.src = sumber.imej;
+  await new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+  canvas.width = sumber.lebar_imej; canvas.height = sumber.tinggi_imej;
+  img.style.width = sumber.lebar_imej + 'px'; img.style.height = sumber.tinggi_imej + 'px';
   memuatEl.style.display = 'none';
   lukis();
   suaiPapar();
 }
+
+function tukarMod(modBaru) {
+  if (MOD === modBaru) return;
+  MOD = modBaru;
+  document.body.classList.toggle('mod-alat', MOD === 'alat');
+  document.body.classList.toggle('mod-laluan', MOD === 'laluan');
+  document.getElementById('mod-alat').classList.toggle('aktif', MOD === 'alat');
+  document.getElementById('mod-laluan').classList.toggle('aktif', MOD === 'laluan');
+  document.getElementById('sub-header').textContent = MOD === 'laluan'
+    ? 'Klik atas pelan untuk cari laluan ke pintu keluar / tempat berkumpul'
+    : 'Klik atas pelan untuk lihat maklumat alat pemadam';
+  titikSaya = null; laluanTerpilih = null;
+  tutupPopup();
+  document.getElementById('nota-tiada-laluan').style.display = (MOD === 'laluan' && !DATA_LALUAN) ? 'block' : 'none';
+  if (TINGKAT_SEMASA) muatkanImejUntukMod();
+}
+document.getElementById('mod-alat').addEventListener('click', () => tukarMod('alat'));
+document.getElementById('mod-laluan').addEventListener('click', () => tukarMod('laluan'));
+document.body.classList.add('mod-alat');
 
 /* ---------------- Zum & Pan ---------------- */
 let zum = 1, ofsX = 0, ofsY = 0;
@@ -419,30 +461,32 @@ function lukisLabelNod(x, y, s, label) {
 /* ---------------- Lukisan utama ---------------- */
 function lukis() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (!DATA_PEMADAM) return;
-  if (papRangkaian && DATA_LALUAN) {
-    ctx.strokeStyle = 'rgba(0,0,0,0.32)'; ctx.lineWidth = 3;
-    DATA_LALUAN.laluan.forEach(l => {
-      const a = nodById[l.dari], b = nodById[l.ke];
-      if (a && b) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
-    });
-  }
-  if (DATA_LALUAN) {
+  if (MOD === 'laluan') {
+    if (!DATA_LALUAN) return;
+    if (papRangkaian) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.32)'; ctx.lineWidth = 3;
+      DATA_LALUAN.laluan.forEach(l => {
+        const a = nodById[l.dari], b = nodById[l.ke];
+        if (a && b) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+      });
+    }
     tanggaList.forEach(n => { lukisIkon('tangga', n.x, n.y, 30); lukisLabelNod(n.x, n.y, 30, n.label); });
     berkumpulList.forEach(n => { lukisIkon('berkumpul', n.x, n.y, 30); lukisLabelNod(n.x, n.y, 30, n.label); });
-  }
-  if (papPemadam) {
-    DATA_PEMADAM.alat_pemadam_api.forEach(p => lukisIkon('pemadam', p.x, p.y, 26));
-  }
-  if (laluanTerpilih && laluanTerpilih.length > 1) {
-    ctx.strokeStyle = '#111'; ctx.lineWidth = 6; ctx.setLineDash([12, 7]); ctx.lineCap = 'round';
-    ctx.beginPath();
-    laluanTerpilih.forEach((id, i) => { const n = nodById[id]; if (i === 0) ctx.moveTo(n.x, n.y); else ctx.lineTo(n.x, n.y); });
-    ctx.stroke(); ctx.setLineDash([]);
-  }
-  if (titikSaya) {
-    ctx.beginPath(); ctx.arc(titikSaya.x, titikSaya.y, 11, 0, Math.PI*2);
-    ctx.fillStyle = '#B3261E'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+    if (laluanTerpilih && laluanTerpilih.length > 1) {
+      ctx.strokeStyle = '#111'; ctx.lineWidth = 6; ctx.setLineDash([12, 7]); ctx.lineCap = 'round';
+      ctx.beginPath();
+      laluanTerpilih.forEach((id, i) => { const n = nodById[id]; if (i === 0) ctx.moveTo(n.x, n.y); else ctx.lineTo(n.x, n.y); });
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+    if (titikSaya) {
+      ctx.beginPath(); ctx.arc(titikSaya.x, titikSaya.y, 11, 0, Math.PI*2);
+      ctx.fillStyle = '#B3261E'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+    }
+  } else {
+    if (!DATA_PEMADAM) return;
+    if (papPemadam) {
+      DATA_PEMADAM.alat_pemadam_api.forEach(p => lukisIkon('pemadam', p.x, p.y, 26));
+    }
   }
   kemaskiniPosisiPopup();
 }
@@ -510,7 +554,8 @@ bekas.addEventListener('click', (e) => {
   const y = (e.clientY - rect.top) / rect.height * canvas.height;
   if (x < 0 || y < 0 || x > canvas.width || y > canvas.height) return; /* klik luar pelan */
 
-  if (papPemadam) {
+  if (MOD === 'alat') {
+    if (!DATA_PEMADAM) return;
     const p = DATA_PEMADAM.alat_pemadam_api.find(pp => Math.hypot(pp.x-x, pp.y-y) <= 16);
     if (p) {
       bukaPopup(p.x, p.y, `<div class="p-tajuk">🧯 Alat Pemadam Api</div>
@@ -518,28 +563,27 @@ bekas.addEventListener('click', (e) => {
         <div class="p-baris">Jenis: <b>${p.jenis}</b></div>
         <div class="p-baris">No. Siri Aset: ${p.no_siri_aset}</div>
         <div class="p-baris">No. Siri Bomba: ${p.no_siri_bomba}</div>`);
-      return;
+    } else {
+      tutupPopup();
     }
+    return;
   }
-  if (DATA_LALUAN) {
-    const nSasaran = [...tanggaList, ...berkumpulList].find(n => Math.hypot(n.x-x, n.y-y) <= 17);
-    if (nSasaran) {
-      const jenisLabel = nSasaran.jenis === 'berkumpul' ? '🎯 Titik Berkumpul' : '🚪 Tangga / Laluan Keluar';
-      bukaPopup(nSasaran.x, nSasaran.y, `<div class="p-tajuk">${jenisLabel}</div>
-        <div class="p-baris">Label: <b>${nSasaran.label || '—'}</b></div>
-        <button class="p-aksi" data-cari="${nSasaran.id}">Cari laluan dari sini</button>`);
-      return;
-    }
+
+  /* MOD === 'laluan' */
+  if (!DATA_LALUAN) return;
+  const nSasaran = [...tanggaList, ...berkumpulList].find(n => Math.hypot(n.x-x, n.y-y) <= 17);
+  if (nSasaran) {
+    const jenisLabel = nSasaran.jenis === 'berkumpul' ? '🎯 Titik Berkumpul' : '🚪 Tangga / Laluan Keluar';
+    bukaPopup(nSasaran.x, nSasaran.y, `<div class="p-tajuk">${jenisLabel}</div>
+      <div class="p-baris">Label: <b>${nSasaran.label || '—'}</b></div>
+      <button class="p-aksi" data-cari="${nSasaran.id}">Cari laluan dari sini</button>`);
+    return;
   }
 
   tutupPopup();
   titikSaya = { x, y };
-  if (DATA_LALUAN) {
-    const nodMula = nodTerdekat(x, y);
-    prosesLaluanDariNodMula(nodMula);
-  } else {
-    lukis();
-  }
+  const nodMula = nodTerdekat(x, y);
+  prosesLaluanDariNodMula(nodMula);
 });
 popupIsiEl.addEventListener('click', (e) => {
   const btn = e.target.closest('button[data-cari]');

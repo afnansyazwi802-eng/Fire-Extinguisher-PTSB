@@ -3,49 +3,51 @@
     "id": "aras1",
     "nama": "Aras 1",
     "imej": "floors/aras1.png",
-    "laluan": null,
-    "pemadam": "floors/aras1_pemadam.json"
+    "pemadam": "floors/aras1_pemadam.json",
+    "imej_laluan": "floors/aras1_laluan_gabungan.png",
+    "laluan": "floors/aras1_laluan.json"
   },
   {
     "id": "aras2",
     "nama": "Aras 2",
     "imej": "floors/aras2.png",
-    "laluan": "floors/aras2_laluan.json",
-    "pemadam": "floors/aras2_pemadam.json"
+    "pemadam": "floors/aras2_pemadam.json",
+    "laluan": "floors/aras2_laluan.json"
   },
   {
     "id": "aras3",
     "nama": "Aras 3",
     "imej": "floors/aras3.png",
-    "laluan": null,
-    "pemadam": "floors/aras3_pemadam.json"
+    "pemadam": "floors/aras3_pemadam.json",
+    "imej_laluan": "floors/aras3_laluan_baru.png",
+    "laluan": "floors/aras3_laluan.json"
   },
   {
     "id": "k1",
     "nama": "Bengkel K1",
     "imej": "floors/k1.png",
-    "laluan": null,
-    "pemadam": "floors/k1_pemadam.json"
+    "pemadam": "floors/k1_pemadam.json",
+    "laluan": "floors/k1_laluan.json"
   },
   {
     "id": "k2",
     "nama": "Bengkel K2",
     "imej": "floors/k2.png",
-    "laluan": null,
-    "pemadam": "floors/k2_pemadam.json"
+    "pemadam": "floors/k2_pemadam.json",
+    "laluan": "floors/k2_laluan.json"
   },
   {
     "id": "k3",
     "nama": "Bengkel K3",
     "imej": "floors/k3.png",
-    "laluan": null,
-    "pemadam": "floors/k3_pemadam.json"
+    "pemadam": "floors/k3_pemadam.json",
+    "laluan": "floors/k3_laluan.json"
   },
   {
     "id": "k4",
     "nama": "Bengkel K4",
     "imej": "floors/k4.png",
-    "laluan": null,
-    "pemadam": "floors/k4_pemadam.json"
+    "pemadam": "floors/k4_pemadam.json",
+    "laluan": "floors/k4_laluan.json"
   }
 ]
