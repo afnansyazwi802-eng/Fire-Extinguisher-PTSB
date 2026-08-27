@@ -246,7 +246,9 @@
 <script type="module">
 import { db, auth } from './firebase-init.js';
 import { collection, doc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+setPersistence(auth, inMemoryPersistence).catch(console.error);
 
 /* ============ Rujukan skema data (sama seperti floors/*.json & peta.html) ============
   laluan.json  : { aras_zon, nod:[{id,x,y,label,jenis}], laluan:[{dari,ke}], lebar_imej, tinggi_imej }
