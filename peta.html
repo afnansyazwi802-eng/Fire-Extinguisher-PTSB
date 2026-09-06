@@ -269,6 +269,17 @@ function senaraiTingkatUntukMod() {
   if (MOD === 'laluan') floors = floors.filter(f => floorAllowedForRoute(f));
   return floors.sort((a,b) => (Number(a.urutan||999)-Number(b.urutan||999)) || a.nama.localeCompare(b.nama));
 }
+function siteIdUntukTingkat(id, dataSiteId){
+  const legacyJka = ['aras1','aras2','aras3','k1','k2','k3','k4'];
+  if (legacyJka.includes(id)) return 'jka';
+  return dataSiteId || (String(id).match(/^([a-z0-9-]+)/i)?.[1] || 'jka').toLowerCase();
+}
+function siteIdUntukTingkat(id, dataSiteId){
+  const legacyJka = ['aras1','aras2','aras3','k1','k2','k3','k4'];
+  if (legacyJka.includes(id)) return 'jka';
+  if (dataSiteId) return String(dataSiteId).toLowerCase();
+  return (String(id).split('_')[0] || 'jka').toLowerCase();
+}
 function floorAllowedForRoute(f){
   if(!f || f.route_aktif===false) return false;
   if((f.site_id||'jka')==='jka' && ['k1','k2','k3','k4'].includes(f.id)) return false;
@@ -289,8 +300,17 @@ async function mula() {
   try {
     const [siteSnap, snap] = await Promise.all([getDocs(collection(db,'sites')), getDocs(collection(db, 'floors'))]);
     siteSnap.forEach(d => { SITES[d.id] = {id:d.id, ...d.data()}; });
-    SENARAI_TINGKAT = snap.docs.map(d => ({ id: d.id, ...d.data(), site_id: d.data().site_id || (['aras1','aras2','aras3','k1','k2','k3','k4'].includes(d.id)?'jka':'jka') }));
-    SEMUA_PEMADAM = SENARAI_TINGKAT.flatMap(f => (Array.isArray(f.pemadam) ? f.pemadam : []).map(p => ({ ...p, _tingkatId: f.id, _tingkatNama: f.nama || f.id, _siteId:f.site_id || 'jka', _siteNama:SITES[f.site_id || 'jka']?.nama || 'JKA' })));
+    if (!SITES.jka) {
+      SITES.jka = { id:'jka', kod:'JKA', nama:'Jabatan Kejuruteraan Awam', subNama:'Blok K', aktif:true, urutan:1, _synthetic:true };
+    }
+    SENARAI_TINGKAT = snap.docs.map(d => {
+      const data = d.data() || {};
+      return { id:d.id, ...data, site_id:siteIdUntukTingkat(d.id, data.site_id) };
+    });
+    SEMUA_PEMADAM = SENARAI_TINGKAT.flatMap(f => (Array.isArray(f.pemadam) ? f.pemadam : []).map(p => ({
+      ...p, _tingkatId:f.id, _tingkatNama:f.nama || f.id, _siteId:f.site_id || 'jka',
+      _siteNama:SITES[f.site_id || 'jka']?.nama || (f.site_id === 'jka' ? 'Jabatan Kejuruteraan Awam' : String(f.site_id||'').toUpperCase())
+    })));
   } catch (e) {
     console.error(e);
     memuatEl.textContent = 'Ralat: gagal muatkan data dari Firestore';
@@ -411,7 +431,7 @@ async function tukarMod(modBaru) {
   tutupPopup();
   const dibenar = MOD === 'alat' || ROUTE_FLOOR_IDS.includes(TINGKAT_SEMASA?.id);
   if (!dibenar) {
-    const target = SENARAI_TINGKAT.find(f => f.id === 'aras1') || SENARAI_TINGKAT[0];
+    const target = senaraiTingkatUntukMod()[0] || SENARAI_TINGKAT.find(f => f.id === 'aras1') || SENARAI_TINGKAT[0];
     if (target) await muatTingkat(target);
     return;
   }

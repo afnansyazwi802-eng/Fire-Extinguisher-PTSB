@@ -366,7 +366,7 @@ async function muatSenaraiSediaAda() {
     });
     floorSnap.forEach(docSnap => {
       const data = docSnap.data() || {};
-      const siteId = data.site_id || inferSiteId(docSnap.id);
+      const siteId = inferSiteId(docSnap.id, data.site_id);
       ensureSiteMemory(siteId);
       const imejPelan = data.imej || data.imej_laluan || ('floors/' + docSnap.id + '.png');
       const lebarPelan = data.lebar_imej || data.lebar_laluan || 0;
@@ -397,8 +397,11 @@ async function muatSenaraiSediaAda() {
     toast('Ralat memuatkan data dari Firestore — semak Security Rules / sambungan.');
   }
 }
-function inferSiteId(id){
-  return ['aras1','aras2','aras3','k1','k2','k3','k4'].includes(id) ? DEFAULT_SITE_ID : (String(id).split('_')[0] || DEFAULT_SITE_ID);
+function inferSiteId(id, storedSiteId=''){
+  const legacyJka=['aras1','aras2','aras3','k1','k2','k3','k4'];
+  if(legacyJka.includes(id)) return DEFAULT_SITE_ID;
+  if(storedSiteId) return String(storedSiteId).toLowerCase();
+  return (String(id).split('_')[0] || DEFAULT_SITE_ID).toLowerCase();
 }
 function inferFloorOrder(id){
   const m=String(id).match(/(\d+)/); return m ? Number(m[1]) : 999;
@@ -446,7 +449,7 @@ async function simpanFirestoreSekarang(f) {
       // Pelan alat kekal pada imej asal. Pelan laluan boleh menggunakan komposit khas Aras 1.
       imej: imejUtama, lebar_imej: f.lebarPelan, tinggi_imej: f.tinggiPelan, pemadam: f.pemadam,
       imej_laluan: imejLaluan, lebar_laluan: lebarLaluan, tinggi_laluan: tinggiLaluan,
-      nod: f.nod, laluan: f.laluan, site_id: f.site_id || SITE_AKTIF || DEFAULT_SITE_ID,
+      nod: f.nod, laluan: f.laluan, site_id: inferSiteId(f.id, f.site_id || SITE_AKTIF || DEFAULT_SITE_ID),
       urutan: Number(f.urutan || inferFloorOrder(f.id)), route_aktif: f.route_aktif !== false
     });
     if (statusEl) { statusEl.textContent = '☁️ Tersimpan'; statusEl.style.color = 'var(--hijau)'; }
@@ -559,7 +562,7 @@ async function ciptaSiteBaharu(){
     ['st-id','st-nama','st-subnama','st-keterangan'].forEach(x=>document.getElementById(x).value='');
     kemaskiniPilihanTingkat();
     toast('Bangunan/Jabatan '+site.kod+' berjaya dicipta.');
-  }catch(e){console.error(e);toast('Gagal mencipta bangunan — semak Security Rules.');}
+  }catch(e){console.error(e);toast(e?.code === 'permission-denied' ? 'Gagal mencipta bangunan — Firebase menolak write. Pastikan Rules /sites sudah Publish dan anda log masuk.' : 'Gagal mencipta bangunan.');}
 }
 document.getElementById('btn-site-baharu').addEventListener('click',()=>document.getElementById('overlay-site-baharu').classList.add('tunjuk'));
 document.getElementById('st-batal').addEventListener('click',()=>document.getElementById('overlay-site-baharu').classList.remove('tunjuk'));
@@ -580,7 +583,7 @@ async function padamTingkatSemasa(){
     kemaskiniPilihanTingkat();
     if(!FLOOR_AKTIF){ kosongEl.style.display=''; viewport.style.display='none'; kawalanZumEl.style.display='none'; }
     toast('Tingkat '+f.nama+' telah dipadam.');
-  }catch(e){ console.error(e); toast('Gagal memadam tingkat — semak Security Rules.'); }
+  }catch(e){ console.error(e); toast(e?.code === 'permission-denied' ? 'Gagal memadam tingkat — Firebase Rules belum membenarkan delete/write.' : 'Gagal memadam tingkat.'); }
 }
 async function padamSiteSemasa(){
   const siteId = SITE_AKTIF || pilihSiteEl.value;
@@ -601,7 +604,7 @@ async function padamSiteSemasa(){
     binaSenaraiTingkat(); kemaskiniPilihanTingkat();
     kosongEl.style.display=''; viewport.style.display='none'; kawalanZumEl.style.display='none';
     toast('Bangunan '+(site.kod||site.nama)+' telah dipadam.');
-  }catch(e){ console.error(e); toast('Gagal memadam bangunan — semak Security Rules.'); }
+  }catch(e){ console.error(e); toast(e?.code === 'permission-denied' ? 'Gagal memadam bangunan — Publish Rules untuk /sites dan pastikan anda masih log masuk.' : 'Gagal memadam bangunan.'); }
 }
 document.getElementById('btn-padam-tingkat').addEventListener('click',padamTingkatSemasa);
 document.getElementById('btn-padam-site').addEventListener('click',padamSiteSemasa);
