@@ -107,9 +107,6 @@
     <button class="btn aktif" id="mod-nod" data-mod="nod">🔵 Nod &amp; Laluan</button>
     <button class="btn" id="mod-alat" data-mod="alat">🧯 Alat Pemadam</button>
     <div class="pemisah"></div>
-    <button class="btn merah" id="btn-ganti-laluan" disabled>🖼️ Ganti Pelan Laluan (Kosong)</button>
-    <input type="file" id="input-ganti-laluan" accept="image/*" style="display:none">
-    <div class="pemisah"></div>
     <button class="btn hijau" id="btn-muat-laluan" disabled>⬇ laluan.json</button>
     <button class="btn hijau" id="btn-muat-pemadam" disabled>⬇ pemadam.json</button>
     <button class="btn" id="btn-muat-index">⬇ floors-index.json</button>
@@ -354,14 +351,7 @@ async function simpanFirestoreSekarang(f) {
   const statusEl = document.getElementById('status-simpan');
   try {
     const imejAlatPath = (f.imejAlat && f.imejAlat.startsWith('data:')) ? ('floors/' + f.id + '.png') : f.imejAlat;
-    // Nota: kalau imejLaluan ialah dataURL yang SAMA dengan imejAlat (cth: baru cipta tingkat,
-    // satu gambar dimuat naik utk kedua-dua mod), guna nama fail yang sama macam dulu.
-    // Kalau ia dataURL yang BERBEZA (cth: guna butang "Ganti Pelan Laluan"), guna nama
-    // fail berasingan "_laluan.png" supaya ia tidak menimpa gambar Alat Pemadam.
-    let imejLaluanPath = f.imejLaluan;
-    if (f.imejLaluan && f.imejLaluan.startsWith('data:')) {
-      imejLaluanPath = (f.imejLaluan === f.imejAlat) ? ('floors/' + f.id + '.png') : ('floors/' + f.id + '_laluan.png');
-    }
+    const imejLaluanPath = (f.imejLaluan && f.imejLaluan.startsWith('data:')) ? ('floors/' + f.id + '.png') : f.imejLaluan;
     await setDoc(doc(db, 'floors', f.id), {
       nama: f.nama,
       imej: imejAlatPath, lebar_imej: f.lebarAlat, tinggi_imej: f.tinggiAlat, pemadam: f.pemadam,
@@ -399,7 +389,6 @@ function bukaTingkat(id) {
 
   document.getElementById('btn-muat-laluan').disabled = false;
   document.getElementById('btn-muat-pemadam').disabled = false;
-  document.getElementById('btn-ganti-laluan').disabled = false;
   paparSenaraiBelumTempat();
 }
 pilihTingkatEl.addEventListener('change', () => { if (pilihTingkatEl.value) bukaTingkat(pilihTingkatEl.value); });
@@ -469,44 +458,6 @@ function tukarMod(m) {
   if (FLOOR_AKTIF) muatImejUntukMod();
   else lukis();
 }
-
-/* ---------------- Ganti Pelan Laluan (kosongkan nod & laluan sahaja, Alat Pemadam tidak disentuh) ---------------- */
-document.getElementById('btn-ganti-laluan').addEventListener('click', () => {
-  if (!FLOOR_AKTIF) return;
-  document.getElementById('input-ganti-laluan').click();
-});
-document.getElementById('input-ganti-laluan').addEventListener('change', (e) => {
-  const fail = e.target.files[0];
-  e.target.value = ''; // supaya fail sama boleh dipilih semula lain kali kalau perlu
-  if (!fail || !FLOOR_AKTIF) return;
-
-  const ok = confirm(
-    'Ini akan PADAM semua nod & laluan sedia ada untuk tingkat "' + FLOOR_AKTIF.nama + '" ' +
-    'dan gantikan dengan pelan KOSONG yang baharu.\n\n' +
-    'Alat Pemadam Api untuk tingkat ini TIDAK akan disentuh.\n\n' +
-    'Teruskan?'
-  );
-  if (!ok) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    const f = FLOOR_AKTIF;
-    f.imejLaluan = reader.result;          // gambar pelan laluan baharu (kosong)
-    f.lebarLaluan = 0; f.tinggiLaluan = 0;  // kira semula ikut saiz gambar baharu bila dimuatkan
-    f.nod = [];                            // buang semua nod lama
-    f.laluan = [];                         // buang semua sambungan laluan lama
-
-    nodTerpilih = null; sambungDari = null; alatArmed = null;
-    MODE = 'nod';
-    document.getElementById('mod-nod').classList.add('aktif');
-    document.getElementById('mod-alat').classList.remove('aktif');
-    muatImejUntukMod();
-    kemaskiniPanel();
-    simpanFirestoreSekarang(f);
-    toast('Pelan laluan "' + f.nama + '" digantikan dengan pelan kosong. PENTING: muat naik gambar "' + f.id + '_laluan.png" ke folder floors/ dalam repo GitHub.');
-  };
-  reader.readAsDataURL(fail);
-});
 
 /* ---------------- Panel sisi ---------------- */
 function kemaskiniPanel() {
