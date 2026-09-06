@@ -122,7 +122,7 @@ async function mula(){
     sites.sort((a,b)=>(Number(a.urutan||999)-Number(b.urutan||999)) || String(a.nama||a.id).localeCompare(String(b.nama||b.id)));
     grid.innerHTML = sites.length ? sites.map((site, idx) => {
       const count = floors.filter(f => (f.site_id || (['aras1','aras2','aras3','k1','k2','k3','k4'].includes(f.id)?'jka':f.site_id)) === site.id).length;
-      return `<a class="blok-kad ${idx===0?'aktif':''}" href="peta.html?site=${encodeURIComponent(site.id)}">${IKON}<b>${escapeHtml(site.kod||site.nama||site.id)}</b><small>${escapeHtml(site.subNama||site.keterangan||(''+count+' tingkat'))}</small></a>`;
+      return `<a class="blok-kad aktif" href="peta.html?site=${encodeURIComponent(site.id)}">${IKON}<b>${escapeHtml(site.kod||site.nama||site.id)}</b><small>${escapeHtml(site.subNama||site.keterangan||(''+count+' tingkat'))}</small></a>`;
     }).join('') : `<div class="blok-kad belum" style="grid-column:1/-1;aspect-ratio:auto;min-height:120px"><b>Belum ada bangunan</b></div>`;
     nota.innerHTML = 'Bangunan / jabatan yang dipaparkan di sini boleh ditambah melalui <b>Editor</b>. Setiap bangunan mempunyai tingkat dan data sendiri tanpa mengganggu bangunan lain.';
   } catch(e) {
