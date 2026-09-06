@@ -195,7 +195,6 @@ let SENARAI_TINGKAT = [], TINGKAT_SEMASA = null;
 let SEMUA_PEMADAM = [];
 let SITES = {};
 let SITE_SEMASA = null;
-const ROUTE_FLOOR_IDS = ['aras3','aras2','aras1'];
 const ROUTE_COMPOSITE = { aras1: { image:'floors/aras1_laluan_gabungan.png', width:1800, height:1130, merge:['k1','k2','k3','k4'] } };
 let MOD = 'alat'; /* 'alat' | 'laluan' */
 let popupAktif = null; /* { x, y } dlm koordinat kanvas semula jadi, untuk kekal posisi bila zum/pan */
@@ -272,11 +271,6 @@ function senaraiTingkatUntukMod() {
 function siteIdUntukTingkat(id, dataSiteId){
   const legacyJka = ['aras1','aras2','aras3','k1','k2','k3','k4'];
   if (legacyJka.includes(id)) return 'jka';
-  return dataSiteId || (String(id).match(/^([a-z0-9-]+)/i)?.[1] || 'jka').toLowerCase();
-}
-function siteIdUntukTingkat(id, dataSiteId){
-  const legacyJka = ['aras1','aras2','aras3','k1','k2','k3','k4'];
-  if (legacyJka.includes(id)) return 'jka';
   if (dataSiteId) return String(dataSiteId).toLowerCase();
   return (String(id).split('_')[0] || 'jka').toLowerCase();
 }
@@ -325,7 +319,7 @@ async function mula() {
 
   const tingkatDariURL = paramURL.get('tingkat');
   const calon = SENARAI_TINGKAT.find(f => f.id === tingkatDariURL && f.site_id === SITE_SEMASA);
-  const tingkatAwal = (calon && (MOD === 'alat' || ROUTE_FLOOR_IDS.includes(calon.id)))
+  const tingkatAwal = (calon && (MOD === 'alat' || floorAllowedForRoute(calon)))
     ? calon
     : senaraiTingkatUntukMod()[0];
   await muatTingkat(tingkatAwal);
@@ -429,10 +423,18 @@ async function tukarMod(modBaru) {
     : 'Klik atas pelan untuk lihat maklumat alat pemadam';
   titikSaya = null; laluanTerpilih = null;
   tutupPopup();
-  const dibenar = MOD === 'alat' || ROUTE_FLOOR_IDS.includes(TINGKAT_SEMASA?.id);
+  const dibenar = MOD === 'alat' || floorAllowedForRoute(TINGKAT_SEMASA);
   if (!dibenar) {
-    const target = senaraiTingkatUntukMod()[0] || SENARAI_TINGKAT.find(f => f.id === 'aras1') || SENARAI_TINGKAT[0];
-    if (target) await muatTingkat(target);
+    // Cari tingkat lain dalam BANGUNAN SEMASA sahaja yang sah utk mod laluan — JANGAN lompat
+    // ke bangunan lain (cth: JKA) walaupun tiada tingkat laluan dalam bangunan semasa.
+    const target = senaraiTingkatUntukMod()[0];
+    if (target) { await muatTingkat(target); }
+    else {
+      DATA_LALUAN = null;
+      document.getElementById('nota-tiada-laluan').style.display = 'block';
+      document.getElementById('togol-rangkaian').classList.add('lumpuh');
+      lukis();
+    }
     return;
   }
   if (TINGKAT_SEMASA) {

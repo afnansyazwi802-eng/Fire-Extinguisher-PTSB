@@ -274,7 +274,7 @@
 
 <script type="module">
 import { db, auth } from './firebase-init.js';
-import { collection, doc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { collection, doc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
 setPersistence(auth, inMemoryPersistence).catch(console.error);
@@ -360,9 +360,11 @@ async function muatSenaraiSediaAda() {
       getDocs(collection(db, 'floors'))
     ]);
 
+    let adaSiteJkaDalamFirestore = false;
     siteSnap.forEach(d => {
       const data = d.data() || {};
       SITES[d.id] = { id:d.id, kod:data.kod || d.id.toUpperCase(), nama:data.nama || d.id, subNama:data.subNama || data.keterangan || '', keterangan:data.keterangan || '', aktif:data.aktif !== false, urutan:Number(data.urutan || 999) };
+      if (d.id === DEFAULT_SITE_ID) adaSiteJkaDalamFirestore = true;
     });
     floorSnap.forEach(docSnap => {
       const data = docSnap.data() || {};
@@ -381,7 +383,7 @@ async function muatSenaraiSediaAda() {
       };
       FLOORS[f.id] = f;
     });
-    if (!SITES[DEFAULT_SITE_ID]) {
+    if (!adaSiteJkaDalamFirestore) {
       SITES[DEFAULT_SITE_ID] = {id:DEFAULT_SITE_ID,kod:'JKA',nama:'Jabatan Kejuruteraan Awam',subNama:'Blok K',keterangan:'JKA PTSB',aktif:true,urutan:1};
       await setDoc(doc(db,'sites',DEFAULT_SITE_ID), SITES[DEFAULT_SITE_ID]);
     }

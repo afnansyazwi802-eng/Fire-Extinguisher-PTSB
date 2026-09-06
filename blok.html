@@ -108,11 +108,17 @@ async function mula(){
     ]);
     let sites = siteSnap.docs.map(d => ({id:d.id, ...d.data()})).filter(x => x.aktif !== false);
     const floors = floorSnap.docs.map(d => ({id:d.id, ...d.data()}));
-    if (!sites.length) {
-      const map = new Map();
-      floors.forEach(f => { const id = f.site_id || 'jka'; if(!map.has(id)) map.set(id,{id,nama:id.toUpperCase(),subNama:'Bangunan',aktif:true}); });
-      sites = [...map.values()];
-    }
+    // Tambah bangunan yang disimpulkan drpd data tingkat tapi belum ada dokumen 'sites' sendiri
+    // (cth: JKA lama). Guna UNION, bukan gantikan — supaya bangunan yang sudah ada dokumen SITES
+    // tak hilang bila ada bangunan lain yang belum ada dokumen sendiri, dan sebaliknya.
+    const siteIdSudahAda = new Set(sites.map(s => s.id));
+    floors.forEach(f => {
+      const id = f.site_id || (['aras1','aras2','aras3','k1','k2','k3','k4'].includes(f.id) ? 'jka' : null);
+      if (id && !siteIdSudahAda.has(id)) {
+        siteIdSudahAda.add(id);
+        sites.push({ id, nama:id.toUpperCase(), kod:id.toUpperCase(), subNama:'Bangunan', aktif:true, urutan:999 });
+      }
+    });
     sites.sort((a,b)=>(Number(a.urutan||999)-Number(b.urutan||999)) || String(a.nama||a.id).localeCompare(String(b.nama||b.id)));
     grid.innerHTML = sites.length ? sites.map((site, idx) => {
       const count = floors.filter(f => (f.site_id || (['aras1','aras2','aras3','k1','k2','k3','k4'].includes(f.id)?'jka':f.site_id)) === site.id).length;
