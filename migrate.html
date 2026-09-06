@@ -102,23 +102,24 @@ document.getElementById('btn-mula').addEventListener('click', async () => {
 
   for (const info of senarai) {
     try {
-      let nod = [], laluan = [], lebarLaluan = 0, tinggiLaluan = 0;
+      let nod = [], laluan = [];
       const pem = await muatJSON(info.pemadam);
       const pemadam = pem.alat_pemadam_api || [];
       const lebarAlat = pem.lebar_imej || 0, tinggiAlat = pem.tinggi_imej || 0;
       if (info.laluan) {
         const lal = await muatJSON(info.laluan);
         nod = lal.nod || []; laluan = lal.laluan || [];
-        lebarLaluan = lal.lebar_imej || 0; tinggiLaluan = lal.tinggi_imej || 0;
       }
       await setDoc(doc(db, 'floors', info.id), {
         nama: info.nama,
+        // Satu gambar pelan dikongsi oleh kedua-dua mode.
         imej: info.imej, lebar_imej: lebarAlat, tinggi_imej: tinggiAlat, pemadam,
-        imej_laluan: info.imej_laluan || info.imej,
-        lebar_laluan: lebarLaluan || lebarAlat, tinggi_laluan: tinggiLaluan || tinggiAlat,
+        // Medan lama dikekalkan untuk keserasian, tetapi sentiasa menunjuk pelan yang sama.
+        imej_laluan: info.imej,
+        lebar_laluan: lebarAlat, tinggi_laluan: tinggiAlat,
         nod, laluan
       });
-      log('✔ ' + info.id + ' (' + info.nama + ') — ' + nod.length + ' nod, ' + pemadam.length + ' alat pemadam' + (info.imej_laluan ? ' [pelan laluan berasingan]' : ''), 'ok');
+      log('✔ ' + info.id + ' (' + info.nama + ') — ' + nod.length + ' nod, ' + pemadam.length + ' alat pemadam' + ' [pelan dikongsi]', 'ok');
     } catch (e) {
       log('✘ ' + info.id + ' gagal: ' + e.message, 'err');
     }

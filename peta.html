@@ -266,9 +266,12 @@ async function muatTingkat(info) {
   resetPanel();
   tutupPopup();
 
-  DATA_PEMADAM = { alat_pemadam_api: info.pemadam || [], lebar_imej: info.lebar_imej, tinggi_imej: info.tinggi_imej, imej: info.imej };
-  const lebarL = info.lebar_laluan || info.lebar_imej, tinggiL = info.tinggi_laluan || info.tinggi_imej;
-  DATA_LALUAN = (info.nod && info.nod.length) ? { nod: info.nod, laluan: info.laluan || [], lebar_imej: lebarL, tinggi_imej: tinggiL, imej: info.imej_laluan || info.imej } : null;
+  // Kedua-dua mode menggunakan pelan lantai yang sama daripada medan `imej`.
+  const imejPelan = info.imej || info.imej_laluan || ('floors/' + info.id + '.png');
+  const lebarPelan = info.lebar_imej || info.lebar_laluan || 0;
+  const tinggiPelan = info.tinggi_imej || info.tinggi_laluan || 0;
+  DATA_PEMADAM = { alat_pemadam_api: info.pemadam || [], lebar_imej: lebarPelan, tinggi_imej: tinggiPelan, imej: imejPelan };
+  DATA_LALUAN = (info.nod && info.nod.length) ? { nod: info.nod, laluan: info.laluan || [], lebar_imej: lebarPelan, tinggi_imej: tinggiPelan, imej: imejPelan } : null;
 
   document.getElementById('nota-tiada-laluan').style.display = (MOD === 'laluan' && !DATA_LALUAN) ? 'block' : 'none';
   document.getElementById('togol-rangkaian').classList.toggle('lumpuh', !DATA_LALUAN);
