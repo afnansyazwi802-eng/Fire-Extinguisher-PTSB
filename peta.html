@@ -66,6 +66,7 @@
   .hasil-cari div { padding:8px 12px; font-size:11.5px; color:var(--teks-malap); border-bottom:1px solid var(--garis); cursor:pointer; }
   .hasil-cari div:hover { background:#171b1d; color:#fff; }
   .hasil-cari div b { color:#fff; display:block; font-size:12px; }
+  .hasil-cari div span { display:block; margin-top:2px; font-size:10.5px; color:var(--teks-malap); }
 
   #pill-kiraan { position:absolute; left:12px; bottom:14px; z-index:7; background:var(--kad); border:1px solid var(--garis);
     color:#fff; font-size:12px; font-weight:700; padding:10px 14px; border-radius:12px; cursor:pointer;
@@ -191,6 +192,7 @@ let nodById = {}, adjList = {}, tanggaList = [], berkumpulList = [];
 let titikSaya = null, laluanTerpilih = null;
 let papRangkaian = true, papPemadam = true;
 let SENARAI_TINGKAT = [], TINGKAT_SEMASA = null;
+let SEMUA_PEMADAM = [];
 const ROUTE_FLOOR_IDS = ['aras3','aras2','aras1'];
 const ROUTE_COMPOSITE = { aras1: { image:'floors/aras1_laluan_gabungan.png', width:1800, height:1130, merge:['k1','k2','k3','k4'] } };
 let MOD = 'alat'; /* 'alat' | 'laluan' */
@@ -280,6 +282,7 @@ async function mula() {
   try {
     const snap = await getDocs(collection(db, 'floors'));
     SENARAI_TINGKAT = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    SEMUA_PEMADAM = SENARAI_TINGKAT.flatMap(f => (Array.isArray(f.pemadam) ? f.pemadam : []).map(p => ({ ...p, _tingkatId: f.id, _tingkatNama: f.nama || f.id })));
   } catch (e) {
     console.error(e);
     memuatEl.textContent = 'Ralat: gagal muatkan data dari Firestore';
@@ -301,17 +304,23 @@ async function mula() {
   const asetDariURL = paramURL.get('aset');
   if (asetDariURL) {
     tukarMod('alat');
-    const p = DATA_PEMADAM.alat_pemadam_api.find(pp => pp.no_siri_aset === asetDariURL);
-    if (p) {
-      bukaPopup(p.x, p.y, `<div class="p-tajuk">🧯 Alat Pemadam Api</div>
-        <div class="p-baris"><b>${p.lokasi}</b></div>
-        <div class="p-baris">Jenis: <b>${p.jenis}</b></div>
-        <div class="p-baris">No. Siri Aset: ${p.no_siri_aset}</div>
-        <div class="p-baris">No. Siri Bomba: ${p.no_siri_bomba}</div>`);
-      zumPada(Math.max(zum, 1.6) / zum, bekas.clientWidth/2, bekas.clientHeight/2);
-      ofsX = bekas.clientWidth/2 - p.x*zum;
-      ofsY = bekas.clientHeight/2 - p.y*zum;
-      tetapkanTransform();
+    const pGlobal = SEMUA_PEMADAM.find(pp => pp.no_siri_aset === asetDariURL);
+    if (pGlobal) {
+      const tingkatP = SENARAI_TINGKAT.find(f => f.id === pGlobal._tingkatId);
+      if (tingkatP) await muatTingkat(tingkatP);
+      const p = DATA_PEMADAM.alat_pemadam_api.find(pp => pp.no_siri_aset === asetDariURL);
+      if (p) {
+        bukaPopup(p.x, p.y, `<div class="p-tajuk">🧯 Alat Pemadam Api</div>
+          <div class="p-baris"><b>${p.lokasi}</b></div>
+          <div class="p-baris">Tingkat: <b>${pGlobal._tingkatNama}</b></div>
+          <div class="p-baris">Jenis: <b>${p.jenis}</b></div>
+          <div class="p-baris">No. Siri Aset: ${p.no_siri_aset}</div>
+          <div class="p-baris">No. Siri Bomba: ${p.no_siri_bomba}</div>`);
+        zumPada(Math.max(zum, 1.6) / zum, bekas.clientWidth/2, bekas.clientHeight/2);
+        ofsX = bekas.clientWidth/2 - p.x*zum;
+        ofsY = bekas.clientHeight/2 - p.y*zum;
+        tetapkanTransform();
+      }
     }
   }
 }
@@ -543,7 +552,7 @@ function lukis() {
       });
     }
     tanggaList.forEach(n => { lukisIkon('tangga', n.x, n.y, 30); lukisLabelNod(n.x, n.y, 30, n.label); });
-    berkumpulList.forEach(n => { lukisIkon('berkumpul', n.x, n.y, 30); lukisLabelNod(n.x, n.y, 30, n.label); });
+    berkumpulList.forEach(n => { const saiz = Math.min(96, Math.max(28, Number(n.saiz || 48))); lukisIkon('berkumpul', n.x, n.y, saiz); lukisLabelNod(n.x, n.y, saiz, n.label); });
     if (laluanTerpilih && laluanTerpilih.length > 1) {
       ctx.strokeStyle = '#111'; ctx.lineWidth = 6; ctx.setLineDash([12, 7]); ctx.lineCap = 'round';
       ctx.beginPath();
@@ -740,29 +749,54 @@ document.getElementById('togol-rangkaian').addEventListener('click', function() 
 document.getElementById('togol-pemadam').addEventListener('click', function() { papPemadam = !papPemadam; this.classList.toggle('hidup'); lukis(); });
 document.getElementById('btn-reset').addEventListener('click', () => { titikSaya = null; laluanTerpilih = null; sesiLaluan = null; resetPanel(); lukis(); });
 
-/* ---------------- Carian ---------------- */
+/* ---------------- Carian semua tingkat ---------------- */
 const inputCari = document.getElementById('input-cari');
 const hasilCariEl = document.getElementById('hasil-cari');
+function escapeHtml(v) {
+  return String(v ?? '').replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[ch]));
+}
 inputCari.addEventListener('input', () => {
   const q = inputCari.value.trim().toLowerCase();
-  if (!q || !DATA_PEMADAM) { hasilCariEl.classList.remove('tunjuk'); return; }
-  const hasil = DATA_PEMADAM.alat_pemadam_api.filter(p =>
-    p.lokasi.toLowerCase().includes(q) || p.no_siri_aset.toLowerCase().includes(q) || p.no_siri_bomba.toLowerCase().includes(q)
-  ).slice(0, 8);
+  if (!q || MOD !== 'alat') { hasilCariEl.classList.remove('tunjuk'); return; }
+  const hasil = SEMUA_PEMADAM.filter(p =>
+    String(p.lokasi || '').toLowerCase().includes(q) ||
+    String(p.no_siri_aset || '').toLowerCase().includes(q) ||
+    String(p.no_siri_bomba || '').toLowerCase().includes(q) ||
+    String(p.jenis || '').toLowerCase().includes(q) ||
+    String(p._tingkatNama || '').toLowerCase().includes(q)
+  ).slice(0, 12);
   hasilCariEl.innerHTML = hasil.length
-    ? hasil.map(p => `<div data-x="${p.x}" data-y="${p.y}"><b>${p.lokasi}</b>${p.no_siri_aset} — ${p.jenis}</div>`).join('')
-    : '<div style="cursor:default">Tiada hasil.</div>';
+    ? hasil.map((p, i) => `<div data-index="${i}" data-floor="${escapeHtml(p._tingkatId)}"><b>${escapeHtml(p.lokasi || '(tiada lokasi)')}</b><span>${escapeHtml(p._tingkatNama)} — ${escapeHtml(p.no_siri_aset || '')} — ${escapeHtml(p.jenis || '')}</span></div>`).join('')
+    : '<div style="cursor:default">Tiada hasil di semua tingkat.</div>';
+  hasilCariEl._hasil = hasil;
   hasilCariEl.classList.add('tunjuk');
 });
-hasilCariEl.addEventListener('click', (e) => {
-  const baris = e.target.closest('div[data-x]');
+hasilCariEl.addEventListener('click', async (e) => {
+  const baris = e.target.closest('div[data-index]');
   if (!baris) return;
-  const x = Number(baris.dataset.x), y = Number(baris.dataset.y);
-  const rw = bekas.clientWidth, rh = bekas.clientHeight;
-  zum = Math.min(2.2, zum * 1.6);
-  ofsX = rw/2 - x*zum; ofsY = rh/2 - y*zum;
+  const hasil = hasilCariEl._hasil || [];
+  const p = hasil[Number(baris.dataset.index)];
+  if (!p) return;
+  const tingkat = SENARAI_TINGKAT.find(f => f.id === p._tingkatId);
+  if (!tingkat) return;
+  await muatTingkat(tingkat);
+  const pSekarang = DATA_PEMADAM?.alat_pemadam_api?.find(pp =>
+    pp.no_siri_aset === p.no_siri_aset && pp.no_siri_bomba === p.no_siri_bomba &&
+    Number(pp.x) === Number(p.x) && Number(pp.y) === Number(p.y)
+  ) || DATA_PEMADAM?.alat_pemadam_api?.find(pp => pp.no_siri_aset === p.no_siri_aset && pp.lokasi === p.lokasi);
+  if (!pSekarang) return;
+  bukaPopup(pSekarang.x, pSekarang.y, `<div class="p-tajuk">🧯 Alat Pemadam Api</div>
+    <div class="p-baris"><b>${escapeHtml(pSekarang.lokasi || '(tiada lokasi)')}</b></div>
+    <div class="p-baris">Tingkat: <b>${escapeHtml(p._tingkatNama)}</b></div>
+    <div class="p-baris">Jenis: <b>${escapeHtml(pSekarang.jenis || '')}</b></div>
+    <div class="p-baris">No. Siri Aset: ${escapeHtml(pSekarang.no_siri_aset || '')}</div>
+    <div class="p-baris">No. Siri Bomba: ${escapeHtml(pSekarang.no_siri_bomba || '')}</div>`);
+  zum = Math.max(zum, 1.6);
+  ofsX = bekas.clientWidth/2 - pSekarang.x*zum;
+  ofsY = bekas.clientHeight/2 - pSekarang.y*zum;
   tetapkanTransform();
-  hasilCariEl.classList.remove('tunjuk'); inputCari.value = '';
+  hasilCariEl.classList.remove('tunjuk');
+  inputCari.value = '';
 });
 
 if ('serviceWorker' in navigator) {

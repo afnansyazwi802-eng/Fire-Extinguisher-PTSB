@@ -155,6 +155,13 @@
         <div class="medan" id="medan-label-kumpul" style="display:none">
           <input type="text" id="input-label-kumpul" placeholder="Label (cth: 1, 2, 3...)">
         </div>
+        <div class="medan" id="medan-saiz-kumpul" style="display:none">
+          <label style="display:block; font-size:11px; color:var(--teks-malap); margin-bottom:4px;">Saiz ikon titik berkumpul</label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="range" id="input-saiz-kumpul" min="28" max="96" step="2" value="48" style="flex:1;">
+            <span id="papar-saiz-kumpul" style="min-width:34px;text-align:right;font-size:11px;color:var(--teks-malap);">48px</span>
+          </div>
+        </div>
         <button class="btn aktif" id="btn-sambung-dari" style="width:100%; margin-bottom:8px;">🔗 Sambung Dari Nod Ini</button>
         <label class="tajuk">Sambungan</label>
         <div class="senarai-mini" id="senarai-sambungan"></div>
@@ -565,6 +572,13 @@ function kemaskiniPanel() {
     document.getElementById('pilih-jenis-nod').value = nodTerpilih.jenis || 'biasa';
     document.getElementById('medan-label-kumpul').style.display = nodTerpilih.jenis !== 'biasa' ? '' : 'none';
     document.getElementById('input-label-kumpul').value = nodTerpilih.label || '';
+    const medanSaiz = document.getElementById('medan-saiz-kumpul');
+    const inputSaiz = document.getElementById('input-saiz-kumpul');
+    const paparSaiz = document.getElementById('papar-saiz-kumpul');
+    const saizKumpul = Math.min(96, Math.max(28, Number(nodTerpilih.saiz || 48)));
+    medanSaiz.style.display = nodTerpilih.jenis === 'berkumpul' ? '' : 'none';
+    inputSaiz.value = String(saizKumpul);
+    paparSaiz.textContent = saizKumpul + 'px';
     const sambunganEl = document.getElementById('senarai-sambungan');
     const list = FLOOR_AKTIF.laluan.filter(l => l.dari === nodTerpilih.id || l.ke === nodTerpilih.id);
     sambunganEl.innerHTML = list.length ? list.map((l,i) => {
@@ -578,12 +592,26 @@ function kemaskiniPanel() {
 document.getElementById('pilih-jenis-nod').addEventListener('change', (e) => {
   if (!nodTerpilih) return;
   nodTerpilih.jenis = e.target.value;
-  if (e.target.value === 'biasa') nodTerpilih.label = '';
+  if (e.target.value === 'biasa') {
+    nodTerpilih.label = '';
+    delete nodTerpilih.saiz;
+  } else if (e.target.value === 'berkumpul') {
+    nodTerpilih.saiz = Number(nodTerpilih.saiz || 48);
+  } else {
+    delete nodTerpilih.saiz;
+  }
   kemaskiniPanel(); lukis(); jadualSimpan();
 });
 document.getElementById('input-label-kumpul').addEventListener('input', (e) => {
   if (!nodTerpilih) return;
   nodTerpilih.label = e.target.value; lukis(); jadualSimpan();
+});
+document.getElementById('input-saiz-kumpul').addEventListener('input', (e) => {
+  if (!nodTerpilih || nodTerpilih.jenis !== 'berkumpul') return;
+  const saiz = Math.min(96, Math.max(28, Number(e.target.value) || 48));
+  nodTerpilih.saiz = saiz;
+  document.getElementById('papar-saiz-kumpul').textContent = saiz + 'px';
+  lukis(); jadualSimpan();
 });
 document.getElementById('btn-sambung-dari').addEventListener('click', () => {
   if (!nodTerpilih) return;
@@ -651,8 +679,9 @@ function lukis() {
 
     FLOOR_AKTIF.nod.forEach(n => {
       if (n.jenis === 'tangga' || n.jenis === 'berkumpul') {
-        lukisIkon(n.jenis, n.x, n.y, 28);
-        lukisLabelNod(n.x, n.y, 28, n.label);
+        const saiz = n.jenis === 'berkumpul' ? Number(n.saiz || 48) : 28;
+        lukisIkon(n.jenis, n.x, n.y, saiz);
+        lukisLabelNod(n.x, n.y, saiz, n.label);
         return;
       }
       ctx.beginPath();
