@@ -267,6 +267,11 @@ const pilihTingkatEl = document.getElementById('pilih-tingkat');
 let FLOORS = {};      // id -> { id, nama, imejPelan/lebarPelan/tinggiPelan, pemadam, nod, laluan, belumTempat }
 let FLOOR_AKTIF = null;
 let MODE = 'nod';      // 'nod' | 'alat'
+const ROUTE_FLOOR_IDS = ['aras3', 'aras2', 'aras1'];
+const ROUTE_COMPOSITE = {
+  aras1: { image: 'floors/aras1_laluan_gabungan.png', width: 1800, height: 1130, merge: ['k1','k2','k3','k4'] }
+};
+let routeGabunganSedangDisedia = false;
 let sambungDari = null; // node id currently connecting from
 let nodTerpilih = null;
 let alatArmed = null;   // item from belumTempat currently armed for placement
@@ -334,6 +339,7 @@ async function muatSenaraiSediaAda() {
       tambahOptionTingkat(f.id, f.nama);
     });
     toast('Data dimuatkan dari Firestore (' + snap.size + ' tingkat).');
+    kemaskiniPilihanTingkat();
   } catch (e) {
     console.error(e);
     toast('Ralat memuatkan data dari Firestore — semak Security Rules / sambungan.');
@@ -352,13 +358,16 @@ function jadualSimpan() {
 async function simpanFirestoreSekarang(f) {
   const statusEl = document.getElementById('status-simpan');
   try {
-    // Satu pelan lantai dikongsi oleh dua paparan: Laluan + Alat Pemadam.
-    const imejPelanPath = (f.imejPelan && f.imejPelan.startsWith('data:')) ? ('floors/' + f.id + '.png') : f.imejPelan;
+    const imejUtama = (f.imejPelan && f.imejPelan.startsWith('data:')) ? ('floors/' + f.id + '.png') : f.imejPelan;
+    const rc = ROUTE_COMPOSITE[f.id];
+    const imejLaluan = rc ? rc.image : ((f.imejLaluan && !f.imejLaluan.startsWith('data:')) ? f.imejLaluan : imejUtama);
+    const lebarLaluan = rc ? rc.width : (f.lebarLaluan || f.lebarPelan);
+    const tinggiLaluan = rc ? rc.height : (f.tinggiLaluan || f.tinggiPelan);
     await setDoc(doc(db, 'floors', f.id), {
       nama: f.nama,
-      imej: imejPelanPath, lebar_imej: f.lebarPelan, tinggi_imej: f.tinggiPelan, pemadam: f.pemadam,
-      // Kekalkan medan lama untuk keserasian, tetapi sentiasa samakan dengan pelan utama.
-      imej_laluan: imejPelanPath, lebar_laluan: f.lebarPelan, tinggi_laluan: f.tinggiPelan,
+      // Pelan alat kekal pada imej asal. Pelan laluan boleh menggunakan komposit khas Aras 1.
+      imej: imejUtama, lebar_imej: f.lebarPelan, tinggi_imej: f.tinggiPelan, pemadam: f.pemadam,
+      imej_laluan: imejLaluan, lebar_laluan: lebarLaluan, tinggi_laluan: tinggiLaluan,
       nod: f.nod, laluan: f.laluan
     });
     if (statusEl) { statusEl.textContent = '☁️ Tersimpan'; statusEl.style.color = 'var(--hijau)'; }
@@ -376,12 +385,86 @@ function tambahOptionTingkat(id, nama) {
 }
 
 /* ---------------- Tukar tingkat aktif ---------------- */
-function bukaTingkat(id) {
+async function fetchJSONTemp(url) {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Gagal muat ' + url);
+  return res.json();
+}
+function transformNode(source, n) {
+  // Semua transform ini mengikuti kedudukan sebenar sub-pelan dalam
+  // floors/aras1_laluan_gabungan.png. Node sumber ditanda supaya merge idempotent.
+  const x = Number(n.x || 0), y = Number(n.y || 0);
+  if (source === 'k1') return { x: 29 + 0.2374*y, y: 799 - 0.2374*x };
+  if (source === 'k2') return { x: 59.33 + 0.2612*x, y: 25.63 + 0.2612*y };
+  if (source === 'k3') return { x: 858.75 - 0.4384*x, y: 252.4 - 0.4384*y };
+  if (source === 'k4') {
+    // K4 berada tegak dalam komposit; transform 90° CCW + skala tak seragam
+    // mengikut sempadan pelan K4 yang ditempatkan dalam komposit.
+    return { x: 333 + (y - 19) * (211/1321), y: 391 + (1776 - x) * (401/1750) };
+  }
+  return { x, y };
+}
+async function pastikanAras1Gabungan(f) {
+  if (!f || f.id !== 'aras1' || routeGabunganSedangDisedia) return;
+  const rc = ROUTE_COMPOSITE.aras1;
+  // Jika sudah pernah digabung, jangan tambah lagi.
+  if ((f.nod || []).some(n => n.sumber_tingkat && rc.merge.includes(n.sumber_tingkat))) {
+    f.imejLaluan = rc.image; f.lebarLaluan = rc.width; f.tinggiLaluan = rc.height;
+    return;
+  }
+  routeGabunganSedangDisedia = true;
+  try {
+    f.nod = Array.isArray(f.nod) ? f.nod : [];
+    f.laluan = Array.isArray(f.laluan) ? f.laluan : [];
+    for (const source of rc.merge) {
+      const data = await fetchJSONTemp(`floors/${source}_laluan.json`);
+      const baseId = ({k1:1000,k2:2000,k3:3000,k4:4000})[source];
+      const mapId = new Map();
+      (data.nod || []).forEach(n => {
+        const id = baseId + Number(n.id);
+        const pos = transformNode(source, n);
+        mapId.set(Number(n.id), id);
+        f.nod.push({ ...n, id, x: Math.round(pos.x*10)/10, y: Math.round(pos.y*10)/10, sumber_tingkat: source });
+      });
+      (data.laluan || []).forEach(l => {
+        const dari = mapId.get(Number(l.dari)), ke = mapId.get(Number(l.ke));
+        if (dari == null || ke == null) return;
+        f.laluan.push({ dari, ke, sumber_tingkat: source });
+      });
+    }
+    f.imejLaluan = rc.image; f.lebarLaluan = rc.width; f.tinggiLaluan = rc.height;
+    f.routeGabungan = true;
+    jadualSimpan();
+    toast('Laluan Aras 1 + K1–K4 digabungkan.');
+  } catch (err) {
+    console.error(err);
+    toast('Gagal gabungkan laluan K1–K4 ke Aras 1.');
+  } finally {
+    routeGabunganSedangDisedia = false;
+  }
+}
+
+function kemaskiniPilihanTingkat() {
+  const pilihan = pilihTingkatEl.value;
+  [...pilihTingkatEl.options].forEach((opt, i) => {
+    if (!opt.value) return;
+    const isRoute = ROUTE_FLOOR_IDS.includes(opt.value);
+    opt.hidden = MODE === 'nod' ? !isRoute : false;
+    opt.disabled = MODE === 'nod' ? !isRoute : false;
+  });
+  if (MODE === 'nod' && pilihan && !ROUTE_FLOOR_IDS.includes(pilihan)) {
+    const target = FLOORS.aras1 ? 'aras1' : ROUTE_FLOOR_IDS.find(id => FLOORS[id]);
+    if (target) { pilihTingkatEl.value = target; bukaTingkat(target); }
+  }
+}
+
+async function bukaTingkat(id) {
   const f = FLOORS[id];
   if (!f) return;
   FLOOR_AKTIF = f;
   pilihTingkatEl.value = id;
   nodTerpilih = null; sambungDari = null; alatArmed = null;
+  if (MODE === 'nod') await pastikanAras1Gabungan(f);
   kemaskiniPanel();
 
   kosongEl.style.display = 'none';
@@ -401,16 +484,18 @@ function muatImejUntukMod() {
   const f = FLOOR_AKTIF;
   if (!f) return;
   sedangMuatTingkat = true;
-  const src = f.imejPelan || ('floors/' + f.id + '.png');
+  const rc = MODE === 'nod' ? ROUTE_COMPOSITE[f.id] : null;
+  const src = rc?.image || (MODE === 'nod' ? (f.imejLaluan || f.imejPelan) : f.imejPelan) || ('floors/' + f.id + '.png');
+  const w = rc?.width || (MODE === 'nod' ? (f.lebarLaluan || f.lebarPelan) : f.lebarPelan);
+  const h = rc?.height || (MODE === 'nod' ? (f.tinggiLaluan || f.tinggiPelan) : f.tinggiPelan);
   imgEl.onload = () => {
-    if (!f.lebarPelan || !f.tinggiPelan) {
-      f.lebarPelan = imgEl.naturalWidth;
-      f.tinggiPelan = imgEl.naturalHeight;
+    if (MODE === 'alat' && (!f.lebarPelan || !f.tinggiPelan)) {
+      f.lebarPelan = imgEl.naturalWidth; f.tinggiPelan = imgEl.naturalHeight;
     }
-    canvas.width = f.lebarPelan;
-    canvas.height = f.tinggiPelan;
-    imgEl.style.width = f.lebarPelan + 'px';
-    imgEl.style.height = f.tinggiPelan + 'px';
+    canvas.width = w || imgEl.naturalWidth;
+    canvas.height = h || imgEl.naturalHeight;
+    imgEl.style.width = canvas.width + 'px';
+    imgEl.style.height = canvas.height + 'px';
     suaiPapar();
     lukis();
     sedangMuatTingkat = false;
@@ -455,12 +540,14 @@ document.getElementById('tb-cipta').addEventListener('click', () => {
 /* ---------------- Mod (Nod / Alat) ---------------- */
 document.getElementById('mod-nod').addEventListener('click', () => tukarMod('nod'));
 document.getElementById('mod-alat').addEventListener('click', () => tukarMod('alat'));
-function tukarMod(m) {
-  if (MODE === m) return;
+async function tukarMod(m) {
+  if (MODE === m) { kemaskiniPilihanTingkat(); return; }
   MODE = m;
   document.getElementById('mod-nod').classList.toggle('aktif', m === 'nod');
   document.getElementById('mod-alat').classList.toggle('aktif', m === 'alat');
   nodTerpilih = null; sambungDari = null; alatArmed = null;
+  kemaskiniPilihanTingkat();
+  if (FLOOR_AKTIF && MODE === 'nod') await pastikanAras1Gabungan(FLOOR_AKTIF);
   kemaskiniPanel();
   if (FLOOR_AKTIF) muatImejUntukMod();
   else lukis();

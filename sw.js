@@ -1,9 +1,9 @@
-const NAMA_CACHE = "laluan-kecemasan-sistem-v11-1";
+const NAMA_CACHE = "laluan-kecemasan-sistem-v11-2";
 const FAIL_UNTUK_CACHE = [
   "./index.html", "./blok.html", "./peta.html", "./senarai.html", "./panduan.html",
   "./tentang.html", "./tetapan.html", "./editor.html", "./manifest.json", "./floors/floors-index.json",
   "./simbol/pemadam.png", "./simbol/berkumpul.png", "./simbol/tangga.svg",
-  "./floors/aras1.png", "./floors/aras1_laluan.json", "./floors/aras1_pemadam.json",
+  "./floors/aras1.png", "./floors/aras1_laluan_gabungan.png", "./floors/aras1_laluan.json", "./floors/aras1_pemadam.json",
   "./floors/aras2.png", "./floors/aras2_laluan.json", "./floors/aras2_pemadam.json",
   "./floors/aras3.png", "./floors/aras3_laluan.json", "./floors/aras3_pemadam.json",
   "./floors/k1.png", "./floors/k1_laluan.json", "./floors/k1_pemadam.json",

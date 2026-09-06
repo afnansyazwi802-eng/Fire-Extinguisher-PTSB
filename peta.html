@@ -191,8 +191,11 @@ let nodById = {}, adjList = {}, tanggaList = [], berkumpulList = [];
 let titikSaya = null, laluanTerpilih = null;
 let papRangkaian = true, papPemadam = true;
 let SENARAI_TINGKAT = [], TINGKAT_SEMASA = null;
+const ROUTE_FLOOR_IDS = ['aras3','aras2','aras1'];
+const ROUTE_COMPOSITE = { aras1: { image:'floors/aras1_laluan_gabungan.png', width:1800, height:1130, merge:['k1','k2','k3','k4'] } };
 let MOD = 'alat'; /* 'alat' | 'laluan' */
 let popupAktif = null; /* { x, y } dlm koordinat kanvas semula jadi, untuk kekal posisi bila zum/pan */
+let sesiLaluan = null; /* {mulaFloorId, mulaX, mulaY, urutan[]} */
 
 const img = document.getElementById('peta-img');
 const canvas = document.getElementById('peta-canvas');
@@ -215,6 +218,64 @@ async function muatJSON(url) {
   return res.json();
 }
 
+function transformMergedNode(source, n) {
+  const x = Number(n.x || 0), y = Number(n.y || 0);
+  if (source === 'k1') return { x: 29 + 0.2374*y, y: 799 - 0.2374*x };
+  if (source === 'k2') return { x: 59.33 + 0.2612*x, y: 25.63 + 0.2612*y };
+  if (source === 'k3') return { x: 858.75 - 0.4384*x, y: 252.4 - 0.4384*y };
+  if (source === 'k4') return { x: 333 + (y - 19) * (211/1321), y: 391 + (1776 - x) * (401/1750) };
+  return { x, y };
+}
+async function getRouteDataForFloor(info) {
+  const rc = ROUTE_COMPOSITE[info.id];
+  const nod = Array.isArray(info.nod) ? info.nod.map(n => ({...n})) : [];
+  const laluan = Array.isArray(info.laluan) ? info.laluan.map(l => ({...l})) : [];
+  if (info.id === 'aras1') {
+    const sudah = new Set(nod.filter(n => n.sumber_tingkat).map(n => n.sumber_tingkat));
+    for (const source of (rc?.merge || [])) {
+      if (sudah.has(source)) continue;
+      try {
+        const r = await fetch(`floors/${source}_laluan.json`, { cache:'no-store' });
+        if (!r.ok) continue;
+        const data = await r.json();
+        const baseId = ({k1:1000,k2:2000,k3:3000,k4:4000})[source];
+        const map = new Map();
+        (data.nod || []).forEach(n => {
+          const id = baseId + Number(n.id);
+          const p = transformMergedNode(source, n);
+          map.set(Number(n.id), id);
+          nod.push({...n, id, x:Math.round(p.x*10)/10, y:Math.round(p.y*10)/10, sumber_tingkat:source});
+        });
+        (data.laluan || []).forEach(l => {
+          const dari = map.get(Number(l.dari)), ke = map.get(Number(l.ke));
+          if (dari != null && ke != null) laluan.push({dari,ke,sumber_tingkat:source});
+        });
+      } catch(e) { console.warn('Gagal merge', source, e); }
+    }
+  }
+  return {
+    nod, laluan,
+    lebar_imej: rc?.width || info.lebar_laluan || info.lebar_imej || 0,
+    tinggi_imej: rc?.height || info.tinggi_laluan || info.tinggi_imej || 0,
+    imej: rc?.image || info.imej_laluan || info.imej || ('floors/' + info.id + '.png')
+  };
+}
+function senaraiTingkatUntukMod() {
+  return MOD === 'laluan'
+    ? SENARAI_TINGKAT.filter(f => ROUTE_FLOOR_IDS.includes(f.id))
+    : SENARAI_TINGKAT;
+}
+
+function binaTabTingkat() {
+  tabTingkatEl.innerHTML = '';
+  senaraiTingkatUntukMod().forEach(f => {
+    const btn = document.createElement('button');
+    btn.textContent = f.nama; btn.dataset.id = f.id;
+    btn.addEventListener('click', () => { if (TINGKAT_SEMASA?.id !== f.id) muatTingkat(f); });
+    tabTingkatEl.appendChild(btn);
+  });
+}
+
 async function mula() {
   try {
     const snap = await getDocs(collection(db, 'floors'));
@@ -224,17 +285,14 @@ async function mula() {
     memuatEl.textContent = 'Ralat: gagal muatkan data dari Firestore';
     return;
   }
-  tabTingkatEl.innerHTML = '';
-  SENARAI_TINGKAT.forEach(f => {
-    const btn = document.createElement('button');
-    btn.textContent = f.nama; btn.dataset.id = f.id;
-    btn.addEventListener('click', () => { if (TINGKAT_SEMASA?.id !== f.id) muatTingkat(f); });
-    tabTingkatEl.appendChild(btn);
-  });
+  binaTabTingkat();
 
   const paramURL = new URLSearchParams(window.location.search);
   const tingkatDariURL = paramURL.get('tingkat');
-  const tingkatAwal = SENARAI_TINGKAT.find(f => f.id === tingkatDariURL) || SENARAI_TINGKAT[0];
+  const calon = SENARAI_TINGKAT.find(f => f.id === tingkatDariURL);
+  const tingkatAwal = (calon && (MOD === 'alat' || ROUTE_FLOOR_IDS.includes(calon.id)))
+    ? calon
+    : senaraiTingkatUntukMod()[0];
   await muatTingkat(tingkatAwal);
 
   const nodDariURL = paramURL.get('nod');
@@ -266,12 +324,13 @@ async function muatTingkat(info) {
   resetPanel();
   tutupPopup();
 
-  // Kedua-dua mode menggunakan pelan lantai yang sama daripada medan `imej`.
-  const imejPelan = info.imej || info.imej_laluan || ('floors/' + info.id + '.png');
-  const lebarPelan = info.lebar_imej || info.lebar_laluan || 0;
-  const tinggiPelan = info.tinggi_imej || info.tinggi_laluan || 0;
+  // Alat kekal pada pelan asal. Laluan boleh menggunakan pelan komposit Aras 1.
+  const imejPelan = info.imej || ('floors/' + info.id + '.png');
+  const lebarPelan = info.lebar_imej || 0;
+  const tinggiPelan = info.tinggi_imej || 0;
   DATA_PEMADAM = { alat_pemadam_api: info.pemadam || [], lebar_imej: lebarPelan, tinggi_imej: tinggiPelan, imej: imejPelan };
-  DATA_LALUAN = (info.nod && info.nod.length) ? { nod: info.nod, laluan: info.laluan || [], lebar_imej: lebarPelan, tinggi_imej: tinggiPelan, imej: imejPelan } : null;
+  const routeData = await getRouteDataForFloor(info);
+  DATA_LALUAN = routeData.nod.length ? routeData : null;
 
   document.getElementById('nota-tiada-laluan').style.display = (MOD === 'laluan' && !DATA_LALUAN) ? 'block' : 'none';
   document.getElementById('togol-rangkaian').classList.toggle('lumpuh', !DATA_LALUAN);
@@ -293,40 +352,50 @@ async function muatTingkat(info) {
   await muatkanImejUntukMod();
 }
 
-/* Muatkan imej yang betul (alat vs laluan) mengikut MOD semasa, tanpa muat semula senarai tingkat */
+/* Muatkan imej yang betul (alat vs laluan) mengikut MOD semasa */
 async function muatkanImejUntukMod() {
   const sumber = MOD === 'laluan' ? DATA_LALUAN : DATA_PEMADAM;
   document.getElementById('teks-kiraan').textContent = MOD === 'laluan'
     ? `${tanggaList.length + berkumpulList.length} destinasi — ${TINGKAT_SEMASA.nama}`
     : `${DATA_PEMADAM.alat_pemadam_api.length} unit APK — ${TINGKAT_SEMASA.nama}`;
-
   if (!sumber) { lukis(); return; }
 
   memuatEl.style.display = 'flex';
   memuatEl.textContent = 'Memuatkan ' + TINGKAT_SEMASA.nama + '...';
   img.src = sumber.imej;
   await new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
-  canvas.width = sumber.lebar_imej; canvas.height = sumber.tinggi_imej;
-  img.style.width = sumber.lebar_imej + 'px'; img.style.height = sumber.tinggi_imej + 'px';
+  canvas.width = sumber.lebar_imej || img.naturalWidth;
+  canvas.height = sumber.tinggi_imej || img.naturalHeight;
+  img.style.width = canvas.width + 'px'; img.style.height = canvas.height + 'px';
   memuatEl.style.display = 'none';
   lukis();
   suaiPapar();
 }
 
-function tukarMod(modBaru) {
-  if (MOD === modBaru) return;
+async function tukarMod(modBaru) {
+  if (MOD === modBaru) { binaTabTingkat(); return; }
   MOD = modBaru;
+  binaTabTingkat();
   document.body.classList.toggle('mod-alat', MOD === 'alat');
   document.body.classList.toggle('mod-laluan', MOD === 'laluan');
   document.getElementById('mod-alat').classList.toggle('aktif', MOD === 'alat');
   document.getElementById('mod-laluan').classList.toggle('aktif', MOD === 'laluan');
   document.getElementById('sub-header').textContent = MOD === 'laluan'
-    ? 'Klik atas pelan untuk cari laluan ke pintu keluar / tempat berkumpul'
+    ? 'Klik atas pelan untuk cari laluan turun ke aras bawah / tempat berkumpul'
     : 'Klik atas pelan untuk lihat maklumat alat pemadam';
   titikSaya = null; laluanTerpilih = null;
   tutupPopup();
-  document.getElementById('nota-tiada-laluan').style.display = (MOD === 'laluan' && !DATA_LALUAN) ? 'block' : 'none';
-  if (TINGKAT_SEMASA) muatkanImejUntukMod();
+  const dibenar = MOD === 'alat' || ROUTE_FLOOR_IDS.includes(TINGKAT_SEMASA?.id);
+  if (!dibenar) {
+    const target = SENARAI_TINGKAT.find(f => f.id === 'aras1') || SENARAI_TINGKAT[0];
+    if (target) await muatTingkat(target);
+    return;
+  }
+  if (TINGKAT_SEMASA) {
+    await muatTingkat(TINGKAT_SEMASA);
+    return;
+  }
+  lukis();
 }
 document.getElementById('mod-alat').addEventListener('click', () => tukarMod('alat'));
 document.getElementById('mod-laluan').addEventListener('click', () => tukarMod('laluan'));
@@ -531,15 +600,75 @@ function resetPanel() {
   tutupPopup();
 }
 
+function tingkatBawahId() {
+  const i = ROUTE_FLOOR_IDS.indexOf(TINGKAT_SEMASA?.id);
+  return i >= 0 && i < ROUTE_FLOOR_IDS.length - 1 ? ROUTE_FLOOR_IDS[i + 1] : null;
+}
+function labelTingkat(id) {
+  return SENARAI_TINGKAT.find(f => f.id === id)?.nama || id;
+}
+function koordinatKeTingkatBawah(x, y, fromW, fromH, toW, toH) {
+  return { x: x * (toW / fromW), y: y * (toH / fromH) };
+}
+function sasaranLaluanUntukTingkat() {
+  if (!DATA_LALUAN) return [];
+  return TINGKAT_SEMASA?.id === 'aras1' ? berkumpulList : tanggaList;
+}
+async function teruskanKeTingkatBawah(nodTangga) {
+  const nextId = tingkatBawahId();
+  if (!nextId || !nodTangga || !TINGKAT_SEMASA) return;
+  const fromW = DATA_LALUAN?.lebar_imej || canvas.width;
+  const fromH = DATA_LALUAN?.tinggi_imej || canvas.height;
+  const target = SENARAI_TINGKAT.find(f => f.id === nextId);
+  if (!target) return;
+  const routeTargetData = await getRouteDataForFloor(target);
+  const toW = routeTargetData.lebar_imej || target.lebar_laluan || target.lebar_imej || fromW;
+  const toH = routeTargetData.tinggi_imej || target.tinggi_laluan || target.tinggi_imej || fromH;
+  const p = koordinatKeTingkatBawah(nodTangga.x, nodTangga.y, fromW, fromH, toW, toH);
+  if (!sesiLaluan) sesiLaluan = { mulaFloorId: TINGKAT_SEMASA.id, mulaX: titikSaya?.x ?? nodTangga.x, mulaY: titikSaya?.y ?? nodTangga.y, urutan: [] };
+  sesiLaluan.urutan.push({ dari: TINGKAT_SEMASA.id, melalui: nodTangga.id, ke: nextId });
+  await muatTingkat(target);
+  tukarMod('laluan');
+  titikSaya = p;
+  const nodMula = nodTerdekat(p.x, p.y);
+  prosesLaluanDariNodMula(nodMula);
+  suaiPapar();
+}
+
+function paparPilihanTurun(nodSasaran) {
+  const nextId = tingkatBawahId();
+  if (!nextId) return;
+  bukaPopup(nodSasaran.x, nodSasaran.y, `<div class="p-tajuk">🚪 Tangga / Laluan Keluar</div>
+    <div class="p-baris">Label: <b>${nodSasaran.label || '—'}</b></div>
+    <div class="p-baris">Laluan seterusnya: <b>${labelTingkat(nextId)}</b></div>
+    <button class="p-aksi" data-turun>⬇ Turun ke ${labelTingkat(nextId)}</button>`);
+}
+
 function prosesLaluanDariNodMula(nodMula) {
+  if (!nodMula || !DATA_LALUAN) return;
+  const sasaran = sasaranLaluanUntukTingkat();
+  if (!sasaran.length) {
+    laluanTerpilih = null; lukis();
+    if (TINGKAT_SEMASA?.id !== 'aras1') {
+      bukaPopup(nodMula.x, nodMula.y, `<div class="p-tajuk">⚠️ Tangga belum ditetapkan</div>
+        <div class="p-baris">Sila tandakan sekurang-kurangnya satu nod sebagai <b>Tangga / Laluan Keluar</b> pada tingkat ini.</div>`);
+    }
+    return;
+  }
   const { dist, prev } = dijkstra(nodMula.id);
-  let terbaikId = null, jarakMin = Infinity;
-  [...tanggaList, ...berkumpulList].forEach(t => { if (dist[t.id] < jarakMin) { jarakMin = dist[t.id]; terbaikId = t.id; } });
-  if (terbaikId === null || jarakMin === Infinity) {
+  let terbaik = null, jarakMin = Infinity;
+  sasaran.forEach(t => { if (dist[t.id] < jarakMin) { jarakMin = dist[t.id]; terbaik = t; } });
+  if (!terbaik || jarakMin === Infinity) {
     laluanTerpilih = null; lukis(); return;
   }
-  laluanTerpilih = laluanKe(prev, terbaikId);
+  laluanTerpilih = laluanKe(prev, terbaik.id);
   lukis();
+  if (TINGKAT_SEMASA?.id !== 'aras1') paparPilihanTurun(terbaik);
+  else {
+    bukaPopup(terbaik.x, terbaik.y, `<div class="p-tajuk">🎯 Titik Berkumpul</div>
+      <div class="p-baris">Label: <b>${terbaik.label || '—'}</b></div>
+      <div class="p-baris">Anda sudah sampai ke tempat berkumpul.</div>`);
+  }
 }
 
 function cariLaluanDariNod(nodId) {
@@ -598,9 +727,18 @@ popupIsiEl.addEventListener('click', (e) => {
   tutupPopup();
 });
 
+popupIsiEl.addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-turun]');
+  if (!btn) return;
+  if (!DATA_LALUAN) return;
+  const n = nodById[Number((laluanTerpilih || []).at(-1))];
+  if (!n) return;
+  await teruskanKeTingkatBawah(n);
+});
+
 document.getElementById('togol-rangkaian').addEventListener('click', function() { if (!DATA_LALUAN) return; papRangkaian = !papRangkaian; this.classList.toggle('hidup'); lukis(); });
 document.getElementById('togol-pemadam').addEventListener('click', function() { papPemadam = !papPemadam; this.classList.toggle('hidup'); lukis(); });
-document.getElementById('btn-reset').addEventListener('click', () => { titikSaya = null; laluanTerpilih = null; resetPanel(); lukis(); });
+document.getElementById('btn-reset').addEventListener('click', () => { titikSaya = null; laluanTerpilih = null; sesiLaluan = null; resetPanel(); lukis(); });
 
 /* ---------------- Carian ---------------- */
 const inputCari = document.getElementById('input-cari');
