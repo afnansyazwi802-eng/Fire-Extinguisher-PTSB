@@ -112,7 +112,7 @@
   <header>
     <a href="blok.html" id="btn-balik" title="Kembali ke Pilih Blok" aria-label="Kembali ke Pilih Blok">←</a>
     <div>
-      <h1>Fire Extinguisher Safety &amp; Accessibility System</h1>
+      <h1 id="judul-aplikasi">Fire Extinguisher Safety &amp; Accessibility System</h1>
       <p id="sub-header">Klik atas pelan untuk lihat maklumat alat pemadam</p>
     </div>
   </header>
@@ -193,6 +193,8 @@ let titikSaya = null, laluanTerpilih = null;
 let papRangkaian = true, papPemadam = true;
 let SENARAI_TINGKAT = [], TINGKAT_SEMASA = null;
 let SEMUA_PEMADAM = [];
+let SITES = {};
+let SITE_SEMASA = null;
 const ROUTE_FLOOR_IDS = ['aras3','aras2','aras1'];
 const ROUTE_COMPOSITE = { aras1: { image:'floors/aras1_laluan_gabungan.png', width:1800, height:1130, merge:['k1','k2','k3','k4'] } };
 let MOD = 'alat'; /* 'alat' | 'laluan' */
@@ -263,9 +265,14 @@ async function getRouteDataForFloor(info) {
   };
 }
 function senaraiTingkatUntukMod() {
-  return MOD === 'laluan'
-    ? SENARAI_TINGKAT.filter(f => ROUTE_FLOOR_IDS.includes(f.id))
-    : SENARAI_TINGKAT;
+  let floors = SENARAI_TINGKAT.filter(f => (f.site_id || 'jka') === (SITE_SEMASA || 'jka'));
+  if (MOD === 'laluan') floors = floors.filter(f => floorAllowedForRoute(f));
+  return floors.sort((a,b) => (Number(a.urutan||999)-Number(b.urutan||999)) || a.nama.localeCompare(b.nama));
+}
+function floorAllowedForRoute(f){
+  if(!f || f.route_aktif===false) return false;
+  if((f.site_id||'jka')==='jka' && ['k1','k2','k3','k4'].includes(f.id)) return false;
+  return true;
 }
 
 function binaTabTingkat() {
@@ -280,19 +287,24 @@ function binaTabTingkat() {
 
 async function mula() {
   try {
-    const snap = await getDocs(collection(db, 'floors'));
-    SENARAI_TINGKAT = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    SEMUA_PEMADAM = SENARAI_TINGKAT.flatMap(f => (Array.isArray(f.pemadam) ? f.pemadam : []).map(p => ({ ...p, _tingkatId: f.id, _tingkatNama: f.nama || f.id })));
+    const [siteSnap, snap] = await Promise.all([getDocs(collection(db,'sites')), getDocs(collection(db, 'floors'))]);
+    siteSnap.forEach(d => { SITES[d.id] = {id:d.id, ...d.data()}; });
+    SENARAI_TINGKAT = snap.docs.map(d => ({ id: d.id, ...d.data(), site_id: d.data().site_id || (['aras1','aras2','aras3','k1','k2','k3','k4'].includes(d.id)?'jka':'jka') }));
+    SEMUA_PEMADAM = SENARAI_TINGKAT.flatMap(f => (Array.isArray(f.pemadam) ? f.pemadam : []).map(p => ({ ...p, _tingkatId: f.id, _tingkatNama: f.nama || f.id, _siteId:f.site_id || 'jka', _siteNama:SITES[f.site_id || 'jka']?.nama || 'JKA' })));
   } catch (e) {
     console.error(e);
     memuatEl.textContent = 'Ralat: gagal muatkan data dari Firestore';
     return;
   }
+  const paramURL = new URLSearchParams(window.location.search);
+  SITE_SEMASA = paramURL.get('site') || SENARAI_TINGKAT[0]?.site_id || 'jka';
+  const siteNow = SITES[SITE_SEMASA];
+  document.getElementById('sub-header').textContent = siteNow ? ((siteNow.kod || SITE_SEMASA.toUpperCase()) + ' — ' + (siteNow.nama || '')) : SITE_SEMASA.toUpperCase();
+  document.getElementById('btn-balik').href = 'blok.html';
   binaTabTingkat();
 
-  const paramURL = new URLSearchParams(window.location.search);
   const tingkatDariURL = paramURL.get('tingkat');
-  const calon = SENARAI_TINGKAT.find(f => f.id === tingkatDariURL);
+  const calon = SENARAI_TINGKAT.find(f => f.id === tingkatDariURL && f.site_id === SITE_SEMASA);
   const tingkatAwal = (calon && (MOD === 'alat' || ROUTE_FLOOR_IDS.includes(calon.id)))
     ? calon
     : senaraiTingkatUntukMod()[0];
@@ -327,6 +339,9 @@ async function mula() {
 
 async function muatTingkat(info) {
   TINGKAT_SEMASA = info;
+  SITE_SEMASA = info.site_id || SITE_SEMASA || 'jka';
+  const siteLabel = SITES[SITE_SEMASA];
+  document.getElementById('sub-header').textContent = siteLabel ? ((siteLabel.kod || SITE_SEMASA.toUpperCase()) + ' — ' + (siteLabel.nama || '')) : SITE_SEMASA.toUpperCase();
   [...tabTingkatEl.children].forEach(b => b.classList.toggle('aktif', b.dataset.id === info.id));
 
   titikSaya = null; laluanTerpilih = null;
@@ -610,9 +625,11 @@ function resetPanel() {
 }
 
 function tingkatBawahId() {
-  const i = ROUTE_FLOOR_IDS.indexOf(TINGKAT_SEMASA?.id);
-  return i >= 0 && i < ROUTE_FLOOR_IDS.length - 1 ? ROUTE_FLOOR_IDS[i + 1] : null;
+  const list = senaraiTingkatUntukMod();
+  const i = list.findIndex(f => f.id === TINGKAT_SEMASA?.id);
+  return i >= 0 && i < list.length - 1 ? list[i + 1].id : null;
 }
+
 function labelTingkat(id) {
   return SENARAI_TINGKAT.find(f => f.id === id)?.nama || id;
 }
@@ -766,7 +783,7 @@ inputCari.addEventListener('input', () => {
     String(p._tingkatNama || '').toLowerCase().includes(q)
   ).slice(0, 12);
   hasilCariEl.innerHTML = hasil.length
-    ? hasil.map((p, i) => `<div data-index="${i}" data-floor="${escapeHtml(p._tingkatId)}"><b>${escapeHtml(p.lokasi || '(tiada lokasi)')}</b><span>${escapeHtml(p._tingkatNama)} — ${escapeHtml(p.no_siri_aset || '')} — ${escapeHtml(p.jenis || '')}</span></div>`).join('')
+    ? hasil.map((p, i) => `<div data-index="${i}" data-floor="${escapeHtml(p._tingkatId)}"><b>${escapeHtml(p.lokasi || '(tiada lokasi)')}</b><span>${escapeHtml(p._siteNama)} — ${escapeHtml(p._tingkatNama)} — ${escapeHtml(p.no_siri_aset || '')} — ${escapeHtml(p.jenis || '')}</span></div>`).join('')
     : '<div style="cursor:default">Tiada hasil di semua tingkat.</div>';
   hasilCariEl._hasil = hasil;
   hasilCariEl.classList.add('tunjuk');

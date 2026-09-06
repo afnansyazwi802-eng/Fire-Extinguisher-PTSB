@@ -24,8 +24,8 @@
   .keterangan { font-size:12.5px; color:var(--malap); line-height:1.6; margin:0 2px 18px; }
   .keterangan b { color:var(--gelap); }
 
-  .grid-blok { display:flex; gap:12px; }
-  .blok-kad { flex:1; aspect-ratio:1/1; border-radius:16px; display:flex; flex-direction:column;
+  .grid-blok { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .blok-kad { aspect-ratio:1/1; border-radius:16px; display:flex; flex-direction:column;
     align-items:center; justify-content:center; gap:8px; text-align:center; padding:8px; position:relative; }
 
   .blok-kad.aktif { background:linear-gradient(150deg, var(--merah-terang), var(--merah-gelap)); color:#fff;
@@ -66,40 +66,20 @@
 
   <main>
     <p class="keterangan">
-      Buat masa ini sistem <b>hanya lengkap untuk Blok K (JKA)</b>.
-      Blok-blok lain akan ditambah secara berperingkat.
+      Pilih <b>jabatan / bangunan</b> untuk lihat pelan, lokasi alat pemadam dan laluan kecemasan.
+      Senarai ini dibina terus daripada data Firebase dan boleh ditambah kemudian melalui editor.
     </p>
 
-    <div class="grid-blok">
-      <a class="blok-kad aktif" href="peta.html">
-        <svg class="ikon-blok" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 11h.01M15 11h.01M9 15h.01M15 15h.01"/>
-        </svg>
-        <b>JKA</b>
-        <small>Blok K</small>
-      </a>
-
-      <div class="blok-kad belum" role="button" aria-disabled="true">
-        <span class="lencana-belum">Akan Datang</span>
-        <svg class="ikon-blok" viewBox="0 0 24 24" fill="none" stroke="#b7b0a9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/>
-        </svg>
-        <b>(LAIN 2)</b>
-      </div>
-
-      <div class="blok-kad belum" role="button" aria-disabled="true">
-        <span class="lencana-belum">Akan Datang</span>
-        <svg class="ikon-blok" viewBox="0 0 24 24" fill="none" stroke="#b7b0a9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/>
-        </svg>
-        <b>(LAIN 1)</b>
+    <div class="grid-blok" id="grid-blok">
+      <div class="blok-kad belum" style="width:100%;aspect-ratio:auto;min-height:120px;">
+        <b>Memuatkan bangunan…</b>
       </div>
     </div>
 
     <div class="nota">
       <span class="ikon">💡</span>
-      <p>Blok "(Lain 1)" &amp; "(Lain 2)" cuma tempat letak — boleh ditambah kemudian oleh kumpulan
-      sendiri atau pihak lain bila data pelan lantai blok berkenaan dah sedia.</p>
+      <p>Setiap bangunan/jabatan mempunyai senarai tingkat sendiri. Gambar pelan kekal di repository GitHub,
+      manakala nama bangunan, tingkat, alat dan laluan disimpan dalam Firebase.</p>
     </div>
   </main>
 
@@ -110,5 +90,41 @@
     <a href="tetapan.html"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Settings</a>
   </nav>
 </div>
+
+<script type="module">
+import { db } from './firebase-init.js';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+const grid = document.getElementById('grid-blok');
+const nota = document.querySelector('.nota p');
+const IKON = `<svg class="ikon-blok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 11h.01M15 11h.01M9 15h.01M15 15h.01"/></svg>`;
+
+function escapeHtml(v){ return String(v ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+async function mula(){
+  try {
+    const [siteSnap, floorSnap] = await Promise.all([
+      getDocs(collection(db,'sites')),
+      getDocs(collection(db,'floors'))
+    ]);
+    let sites = siteSnap.docs.map(d => ({id:d.id, ...d.data()})).filter(x => x.aktif !== false);
+    const floors = floorSnap.docs.map(d => ({id:d.id, ...d.data()}));
+    if (!sites.length) {
+      const map = new Map();
+      floors.forEach(f => { const id = f.site_id || 'jka'; if(!map.has(id)) map.set(id,{id,nama:id.toUpperCase(),subNama:'Bangunan',aktif:true}); });
+      sites = [...map.values()];
+    }
+    sites.sort((a,b)=>(Number(a.urutan||999)-Number(b.urutan||999)) || String(a.nama||a.id).localeCompare(String(b.nama||b.id)));
+    grid.innerHTML = sites.length ? sites.map((site, idx) => {
+      const count = floors.filter(f => (f.site_id || (['aras1','aras2','aras3','k1','k2','k3','k4'].includes(f.id)?'jka':f.site_id)) === site.id).length;
+      return `<a class="blok-kad ${idx===0?'aktif':''}" href="peta.html?site=${encodeURIComponent(site.id)}">${IKON}<b>${escapeHtml(site.kod||site.nama||site.id)}</b><small>${escapeHtml(site.subNama||site.keterangan||(''+count+' tingkat'))}</small></a>`;
+    }).join('') : `<div class="blok-kad belum" style="grid-column:1/-1;aspect-ratio:auto;min-height:120px"><b>Belum ada bangunan</b></div>`;
+    nota.innerHTML = 'Bangunan / jabatan yang dipaparkan di sini boleh ditambah melalui <b>Editor</b>. Setiap bangunan mempunyai tingkat dan data sendiri tanpa mengganggu bangunan lain.';
+  } catch(e) {
+    console.error(e);
+    grid.innerHTML = `<div class="blok-kad belum" style="grid-column:1/-1;aspect-ratio:auto;min-height:120px"><b>Gagal memuatkan senarai bangunan</b><small>Sila semak sambungan Firebase.</small></div>`;
+  }
+}
+mula();
+</script>
 </body>
 </html>

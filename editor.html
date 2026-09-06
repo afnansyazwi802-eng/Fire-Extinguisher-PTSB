@@ -99,6 +99,10 @@
   </header>
 
   <div id="toolbar">
+    <select id="pilih-site" title="Pilih bangunan / jabatan">
+      <option value="">— Pilih bangunan —</option>
+    </select>
+    <button class="btn" id="btn-site-baharu">+ Bangunan/Jabatan</button>
     <select id="pilih-tingkat">
       <option value="">— Pilih tingkat —</option>
     </select>
@@ -210,12 +214,28 @@
 <div class="overlay" id="overlay-tingkat-baharu">
   <div class="modal">
     <h3>Tingkat Baharu</h3>
+    <div class="medan"><label>Bangunan / Jabatan</label><select id="tb-site"><option value="">— Pilih bangunan —</option></select></div>
     <div class="medan"><label>ID Tingkat (cth: aras1, aras3)</label><input type="text" id="tb-id" placeholder="aras1"></div>
     <div class="medan"><label>Nama Paparan (cth: Aras 1)</label><input type="text" id="tb-nama" placeholder="Aras 1"></div>
     <div class="medan"><label>Gambar Pelan Lantai</label><input type="file" id="tb-gambar" accept="image/*"></div>
+    <div class="kad-info" style="margin-top:6px;">Gambar ini digunakan sebagai sumber pelan. Selepas cipta, letakkan fail PNG/JPG sebenar dalam repository GitHub mengikut path yang ditetapkan sistem.</div>
     <div class="modal-aksi">
       <button class="btn" id="tb-batal">Batal</button>
       <button class="btn hijau" id="tb-cipta">Cipta</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-site-baharu">
+  <div class="modal">
+    <h3>Bangunan / Jabatan Baharu</h3>
+    <div class="medan"><label>ID / Kod (contoh: jtm)</label><input type="text" id="st-id" placeholder="jtm"></div>
+    <div class="medan"><label>Nama Paparan</label><input type="text" id="st-nama" placeholder="Jabatan Teknologi Mekanikal"></div>
+    <div class="medan"><label>Subnama / Blok</label><input type="text" id="st-subnama" placeholder="Blok Mekanikal"></div>
+    <div class="medan"><label>Keterangan</label><input type="text" id="st-keterangan" placeholder="Bangunan baharu"></div>
+    <div class="modal-aksi">
+      <button class="btn" id="st-batal">Batal</button>
+      <button class="btn hijau" id="st-cipta">Cipta</button>
     </div>
   </div>
 </div>
@@ -270,11 +290,16 @@ const ctx = canvas.getContext('2d');
 const kosongEl = document.getElementById('kosong-peta');
 const kawalanZumEl = document.getElementById('kawalan-zum');
 const pilihTingkatEl = document.getElementById('pilih-tingkat');
+const pilihSiteEl = document.getElementById('pilih-site');
+const tbSiteEl = document.getElementById('tb-site');
 
+let SITES = {};       // id -> {id,kod,nama,subNama,keterangan,aktif,urutan}
+let SITE_AKTIF = null;
 let FLOORS = {};      // id -> { id, nama, imejPelan/lebarPelan/tinggiPelan, pemadam, nod, laluan, belumTempat }
 let FLOOR_AKTIF = null;
 let MODE = 'nod';      // 'nod' | 'alat'
 const ROUTE_FLOOR_IDS = ['aras3', 'aras2', 'aras1'];
+const DEFAULT_SITE_ID = 'jka';
 const ROUTE_COMPOSITE = {
   aras1: { image: 'floors/aras1_laluan_gabungan.png', width: 1800, height: 1130, merge: ['k1','k2','k3','k4'] }
 };
@@ -328,14 +353,24 @@ function toast(msg) {
 /* ---------------- Muat senarai tingkat sedia ada (dari Firestore) ---------------- */
 async function muatSenaraiSediaAda() {
   try {
-    const snap = await getDocs(collection(db, 'floors'));
-    snap.forEach(docSnap => {
-      const data = docSnap.data();
+    const [siteSnap, floorSnap] = await Promise.all([
+      getDocs(collection(db, 'sites')),
+      getDocs(collection(db, 'floors'))
+    ]);
+
+    siteSnap.forEach(d => {
+      const data = d.data() || {};
+      SITES[d.id] = { id:d.id, kod:data.kod || d.id.toUpperCase(), nama:data.nama || d.id, subNama:data.subNama || data.keterangan || '', keterangan:data.keterangan || '', aktif:data.aktif !== false, urutan:Number(data.urutan || 999) };
+    });
+    floorSnap.forEach(docSnap => {
+      const data = docSnap.data() || {};
+      const siteId = data.site_id || inferSiteId(docSnap.id);
+      ensureSiteMemory(siteId);
       const imejPelan = data.imej || data.imej_laluan || ('floors/' + docSnap.id + '.png');
       const lebarPelan = data.lebar_imej || data.lebar_laluan || 0;
       const tinggiPelan = data.tinggi_imej || data.tinggi_laluan || 0;
       const f = {
-        id: docSnap.id, nama: data.nama || docSnap.id,
+        id: docSnap.id, nama: data.nama || docSnap.id, site_id: siteId, urutan: Number(data.urutan || inferFloorOrder(docSnap.id)), route_aktif: data.route_aktif !== false,
         imejPelan, lebarPelan, tinggiPelan,
         pemadam: Array.isArray(data.pemadam) ? data.pemadam : [],
         nod: Array.isArray(data.nod) ? data.nod : [],
@@ -343,14 +378,48 @@ async function muatSenaraiSediaAda() {
         belumTempat: []
       };
       FLOORS[f.id] = f;
-      tambahOptionTingkat(f.id, f.nama);
     });
-    toast('Data dimuatkan dari Firestore (' + snap.size + ' tingkat).');
+    if (!SITES[DEFAULT_SITE_ID]) {
+      SITES[DEFAULT_SITE_ID] = {id:DEFAULT_SITE_ID,kod:'JKA',nama:'Jabatan Kejuruteraan Awam',subNama:'Blok K',keterangan:'JKA PTSB',aktif:true,urutan:1};
+      await setDoc(doc(db,'sites',DEFAULT_SITE_ID), SITES[DEFAULT_SITE_ID]);
+    }
+    binaSenaraiSites();
+    binaSenaraiTingkat();
+    if (!SITE_AKTIF) SITE_AKTIF = pilihSiteEl.value || DEFAULT_SITE_ID;
+    pilihSiteEl.value = SITE_AKTIF;
+    populateTbSites();
     kemaskiniPilihanTingkat();
+    toast('Data dimuatkan dari Firebase (' + floorSnap.size + ' tingkat, ' + Object.keys(SITES).length + ' bangunan).');
   } catch (e) {
     console.error(e);
     toast('Ralat memuatkan data dari Firestore — semak Security Rules / sambungan.');
   }
+}
+function inferSiteId(id){
+  return ['aras1','aras2','aras3','k1','k2','k3','k4'].includes(id) ? DEFAULT_SITE_ID : (String(id).split('_')[0] || DEFAULT_SITE_ID);
+}
+function inferFloorOrder(id){
+  const m=String(id).match(/(\d+)/); return m ? Number(m[1]) : 999;
+}
+function ensureSiteMemory(id){ if(!SITES[id]) SITES[id]={id,kod:id.toUpperCase(),nama:id.toUpperCase(),subNama:'',keterangan:'',aktif:true,urutan:999}; }
+function binaSenaraiSites(){
+  const current=SITE_AKTIF || pilihSiteEl.value;
+  pilihSiteEl.innerHTML='<option value="">— Pilih bangunan —</option>';
+  Object.values(SITES).filter(s=>s.aktif!==false).sort((a,b)=>(a.urutan-b.urutan)||a.kod.localeCompare(b.kod)).forEach(site=>{
+    const opt=document.createElement('option'); opt.value=site.id; opt.textContent=(site.kod||site.nama)+' — '+site.nama; pilihSiteEl.appendChild(opt);
+  });
+  if(current && SITES[current]) pilihSiteEl.value=current;
+}
+function populateTbSites(){
+  tbSiteEl.innerHTML='<option value="">— Pilih bangunan —</option>';
+  Object.values(SITES).filter(s=>s.aktif!==false).sort((a,b)=>(a.urutan-b.urutan)||a.kod.localeCompare(b.kod)).forEach(site=>{
+    const opt=document.createElement('option'); opt.value=site.id; opt.textContent=(site.kod||site.nama)+' — '+site.nama; tbSiteEl.appendChild(opt);
+  });
+  if(SITE_AKTIF) tbSiteEl.value=SITE_AKTIF;
+}
+function binaSenaraiTingkat(){
+  pilihTingkatEl.innerHTML='<option value="">— Pilih tingkat —</option>';
+  Object.values(FLOORS).sort((a,b)=>a.urutan-b.urutan || a.nama.localeCompare(b.nama)).forEach(f=>tambahOptionTingkat(f.id,f.nama));
 }
 
 /* ---------------- Simpan ke Firestore (live sync) ---------------- */
@@ -375,7 +444,8 @@ async function simpanFirestoreSekarang(f) {
       // Pelan alat kekal pada imej asal. Pelan laluan boleh menggunakan komposit khas Aras 1.
       imej: imejUtama, lebar_imej: f.lebarPelan, tinggi_imej: f.tinggiPelan, pemadam: f.pemadam,
       imej_laluan: imejLaluan, lebar_laluan: lebarLaluan, tinggi_laluan: tinggiLaluan,
-      nod: f.nod, laluan: f.laluan
+      nod: f.nod, laluan: f.laluan, site_id: f.site_id || SITE_AKTIF || DEFAULT_SITE_ID,
+      urutan: Number(f.urutan || inferFloorOrder(f.id)), route_aktif: f.route_aktif !== false
     });
     if (statusEl) { statusEl.textContent = '☁️ Tersimpan'; statusEl.style.color = 'var(--hijau)'; }
   } catch (err) {
@@ -453,22 +523,53 @@ async function pastikanAras1Gabungan(f) {
 
 function kemaskiniPilihanTingkat() {
   const pilihan = pilihTingkatEl.value;
-  [...pilihTingkatEl.options].forEach((opt, i) => {
+  const siteId = pilihSiteEl.value || SITE_AKTIF || DEFAULT_SITE_ID;
+  SITE_AKTIF = siteId;
+  [...pilihTingkatEl.options].forEach(opt => {
     if (!opt.value) return;
-    const isRoute = ROUTE_FLOOR_IDS.includes(opt.value);
-    opt.hidden = MODE === 'nod' ? !isRoute : false;
-    opt.disabled = MODE === 'nod' ? !isRoute : false;
+    const f = FLOORS[opt.value];
+    const samaSite = !!f && (f.site_id || DEFAULT_SITE_ID) === siteId;
+    const routeAllowed = MODE === 'nod' ? floorAllowedForRoute(f) : true;
+    opt.hidden = !samaSite || !routeAllowed; opt.disabled = !samaSite || !routeAllowed;
   });
-  if (MODE === 'nod' && pilihan && !ROUTE_FLOOR_IDS.includes(pilihan)) {
-    const target = FLOORS.aras1 ? 'aras1' : ROUTE_FLOOR_IDS.find(id => FLOORS[id]);
-    if (target) { pilihTingkatEl.value = target; bukaTingkat(target); }
+  const targetObj = Object.values(FLOORS).filter(f => (f.site_id || DEFAULT_SITE_ID)===siteId && floorAllowedForRoute(f)).sort((a,b)=>a.urutan-b.urutan)[0];
+  if (!FLOORS[pilihan] || (FLOORS[pilihan].site_id || DEFAULT_SITE_ID)!==siteId || (MODE==='nod' && !floorAllowedForRoute(FLOORS[pilihan]))) {
+    if (targetObj) { pilihTingkatEl.value=targetObj.id; bukaTingkat(targetObj.id); } else { pilihTingkatEl.value=''; FLOOR_AKTIF=null; }
   }
 }
+function floorAllowedForRoute(f){
+  if(!f || f.route_aktif===false) return false;
+  if((f.site_id||DEFAULT_SITE_ID)===DEFAULT_SITE_ID && ['k1','k2','k3','k4'].includes(f.id)) return false;
+  return true;
+}
+async function ciptaSiteBaharu(){
+  const id=document.getElementById('st-id').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'');
+  const nama=document.getElementById('st-nama').value.trim() || id.toUpperCase();
+  const subNama=document.getElementById('st-subnama').value.trim();
+  const keterangan=document.getElementById('st-keterangan').value.trim();
+  if(!id){toast('Sila isi ID / kod bangunan.');return;}
+  if(SITES[id]){toast('ID bangunan sudah wujud.');return;}
+  const site={id,kod:id.toUpperCase(),nama,subNama,keterangan,aktif:true,urutan:Object.keys(SITES).length+1};
+  try{
+    await setDoc(doc(db,'sites',id),site);
+    SITES[id]=site; SITE_AKTIF=id; binaSenaraiSites(); populateTbSites(); pilihSiteEl.value=id;
+    document.getElementById('overlay-site-baharu').classList.remove('tunjuk');
+    ['st-id','st-nama','st-subnama','st-keterangan'].forEach(x=>document.getElementById(x).value='');
+    kemaskiniPilihanTingkat();
+    toast('Bangunan/Jabatan '+site.kod+' berjaya dicipta.');
+  }catch(e){console.error(e);toast('Gagal mencipta bangunan — semak Security Rules.');}
+}
+document.getElementById('btn-site-baharu').addEventListener('click',()=>document.getElementById('overlay-site-baharu').classList.add('tunjuk'));
+document.getElementById('st-batal').addEventListener('click',()=>document.getElementById('overlay-site-baharu').classList.remove('tunjuk'));
+document.getElementById('st-cipta').addEventListener('click',ciptaSiteBaharu);
+pilihSiteEl.addEventListener('change',()=>{ SITE_AKTIF=pilihSiteEl.value; kemaskiniPilihanTingkat(); populateTbSites(); });
 
 async function bukaTingkat(id) {
   const f = FLOORS[id];
   if (!f) return;
   FLOOR_AKTIF = f;
+  SITE_AKTIF = f.site_id || DEFAULT_SITE_ID;
+  pilihSiteEl.value = SITE_AKTIF;
   pilihTingkatEl.value = id;
   nodTerpilih = null; sambungDari = null; alatArmed = null;
   if (MODE === 'nod') await pastikanAras1Gabungan(f);
@@ -522,24 +623,24 @@ document.getElementById('btn-tingkat-baharu').addEventListener('click', bukaModa
 document.getElementById('btn-tingkat-baharu-2').addEventListener('click', bukaModalTingkatBaharu);
 document.getElementById('tb-batal').addEventListener('click', () => ovTb.classList.remove('tunjuk'));
 document.getElementById('tb-cipta').addEventListener('click', () => {
-  const id = document.getElementById('tb-id').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  const siteId = tbSiteEl.value || SITE_AKTIF || DEFAULT_SITE_ID;
+  const id = document.getElementById('tb-id').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'');
   const nama = document.getElementById('tb-nama').value.trim() || id;
   const fail = document.getElementById('tb-gambar').files[0];
+  if (!SITES[siteId]) { toast('Sila pilih bangunan/jabatan.'); return; }
   if (!id) { toast('Sila isi ID tingkat.'); return; }
+  if (FLOORS[id]) { toast('ID tingkat sudah wujud.'); return; }
   if (!fail) { toast('Sila muat naik gambar pelan.'); return; }
   const reader = new FileReader();
   reader.onload = () => {
-    const f = { id, nama,
-      imejPelan: reader.result, lebarPelan: 0, tinggiPelan: 0, pemadam: [],
-      nod: [], laluan: [],
-      belumTempat: FLOORS[id]?.belumTempat || [] };
-    FLOORS[id] = f;
-    tambahOptionTingkat(id, nama);
+    const f = { id, nama, site_id:siteId, urutan:inferFloorOrder(id), route_aktif:true,
+      imejPelan:reader.result, lebarPelan:0, tinggiPelan:0, pemadam:[], nod:[], laluan:[], belumTempat:[] };
+    FLOORS[id] = f; tambahOptionTingkat(id,nama); SITE_AKTIF=siteId; pilihSiteEl.value=siteId;
     ovTb.classList.remove('tunjuk');
-    document.getElementById('tb-id').value = ''; document.getElementById('tb-nama').value = ''; document.getElementById('tb-gambar').value = '';
-    bukaTingkat(id);
+    document.getElementById('tb-id').value=''; document.getElementById('tb-nama').value=''; document.getElementById('tb-gambar').value='';
+    kemaskiniPilihanTingkat(); pilihTingkatEl.value=id; bukaTingkat(id);
     simpanFirestoreSekarang(f);
-    toast('Tingkat "' + nama + '" dicipta. PENTING: muat naik gambar "' + id + '.png" ke folder floors/ dalam repo GitHub supaya ia dapat dipapar untuk semua orang.');
+    toast('Tingkat "'+nama+'" dicipta dalam '+(SITES[siteId].kod||siteId)+'. Simpan gambar sebenar dalam repo GitHub: floors/'+id+'.png');
   };
   reader.readAsDataURL(fail);
 });
